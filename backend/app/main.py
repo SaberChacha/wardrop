@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 from contextlib import asynccontextmanager
 import os
 
@@ -9,6 +10,18 @@ from .database import engine, Base
 from .routers import auth, clients, dresses, clothing, bookings, sales, reports, export, notifications
 
 settings = get_settings()
+
+
+class ProxyHeadersMiddleware(BaseHTTPMiddleware):
+    """Middleware to handle X-Forwarded-Proto header for HTTPS redirects"""
+    async def dispatch(self, request: Request, call_next):
+        # Get the forwarded protocol from proxy headers
+        forwarded_proto = request.headers.get("x-forwarded-proto", "http")
+        # Update the scope to use the correct scheme
+        if forwarded_proto == "https":
+            request.scope["scheme"] = "https"
+        response = await call_next(request)
+        return response
 
 
 @asynccontextmanager
@@ -25,13 +38,23 @@ app = FastAPI(
     title=settings.app_name,
     description="Wedding Dress Rental and Sales Management Dashboard",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    # Disable automatic trailing slash redirects to avoid HTTP redirect issues
+    redirect_slashes=False
 )
+
+# Add proxy headers middleware FIRST (before CORS)
+app.add_middleware(ProxyHeadersMiddleware)
 
 # CORS middleware for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173", 
+        "http://127.0.0.1:5173",
+        "https://wardrop.velvetnebula.cloud",
+        "http://wardrop.velvetnebula.cloud"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
