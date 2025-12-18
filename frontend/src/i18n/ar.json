@@ -161,7 +161,10 @@
     "exportCommercialReport": "التقرير التجاري",
     "importClients": "استيراد العملاء",
     "importDresses": "استيراد الفساتين",
-    "importClothing": "استيراد الملابس"
+    "importClothing": "استيراد الملابس",
+    "importSuccess": "تم الاستيراد بنجاح",
+    "importFailed": "فشل الاستيراد",
+    "importDescription": "استيراد البيانات من ملف Excel (.xlsx). قم بتنزيل نموذج عبر التصدير أولاً لمعرفة التنسيق المطلوب."
   },
   "common": {
     "save": "حفظ",

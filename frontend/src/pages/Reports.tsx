@@ -13,8 +13,9 @@ import {
   Pie,
   Cell,
 } from 'recharts'
-import { Download, FileSpreadsheet } from 'lucide-react'
+import { Download, FileSpreadsheet, Upload } from 'lucide-react'
 import { reportsAPI, exportAPI } from '../services/api'
+import { useRef } from 'react'
 import { formatCurrency, downloadFile } from '../lib/utils'
 
 const COLORS = ['#B76E79', '#D4AF37', '#6366F1', '#10B981', '#F59E0B']
@@ -26,6 +27,10 @@ export default function Reports() {
     start: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
     end: new Date().toISOString().split('T')[0],
   })
+  const [importType, setImportType] = useState<string | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importResult, setImportResult] = useState<{ success: boolean; message: string } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { data: earnings, isLoading: earningsLoading } = useQuery({
     queryKey: ['earnings', dateRange, period],
@@ -91,6 +96,53 @@ export default function Reports() {
       downloadFile(blob, filename)
     } catch (error) {
       console.error('Export failed:', error)
+    }
+  }
+
+  const handleImportClick = (type: string) => {
+    setImportType(type)
+    setImportResult(null)
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !importType) return
+
+    setImporting(true)
+    setImportResult(null)
+
+    try {
+      let result
+      switch (importType) {
+        case 'clients':
+          result = await exportAPI.importClients(file)
+          break
+        case 'dresses':
+          result = await exportAPI.importDresses(file)
+          break
+        case 'clothing':
+          result = await exportAPI.importClothing(file)
+          break
+        default:
+          return
+      }
+      
+      setImportResult({
+        success: true,
+        message: `✅ ${t('export.importSuccess')}: ${result.imported} ${importType} importés${result.errors?.length > 0 ? ` (${result.errors.length} erreurs)` : ''}`
+      })
+    } catch (error: any) {
+      setImportResult({
+        success: false,
+        message: `❌ ${t('export.importFailed')}: ${error.response?.data?.detail || error.message}`
+      })
+    } finally {
+      setImporting(false)
+      setImportType(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
@@ -273,11 +325,33 @@ export default function Reports() {
         </div>
       </div>
 
+      {/* Hidden file input for imports */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".xlsx,.xls"
+        className="hidden"
+      />
+
+      {/* Import Result Alert */}
+      {importResult && (
+        <div className={`rounded-xl p-4 ${importResult.success ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'}`}>
+          {importResult.message}
+          <button 
+            onClick={() => setImportResult(null)}
+            className="float-right text-lg font-bold hover:opacity-70"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* Export Section */}
       <div className="bg-surface rounded-xl p-6 border border-border">
         <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
-          <FileSpreadsheet className="w-5 h-5" />
-          {t('export.export')} / {t('export.import')}
+          <Download className="w-5 h-5" />
+          {t('export.export')}
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <button
@@ -321,6 +395,43 @@ export default function Reports() {
           >
             <Download className="w-4 h-4" />
             {t('export.exportCommercialReport')}
+          </button>
+        </div>
+      </div>
+
+      {/* Import Section */}
+      <div className="bg-surface rounded-xl p-6 border border-border">
+        <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+          <Upload className="w-5 h-5" />
+          {t('export.import')}
+        </h3>
+        <p className="text-sm text-text-muted mb-4">
+          {t('export.importDescription') || 'Importez des données depuis un fichier Excel (.xlsx). Téléchargez d\'abord un modèle via l\'export pour voir le format attendu.'}
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <button
+            onClick={() => handleImportClick('clients')}
+            disabled={importing}
+            className="btn-outline flex items-center justify-center gap-2 border-dashed"
+          >
+            <Upload className="w-4 h-4" />
+            {importing && importType === 'clients' ? '...' : t('nav.clients')}
+          </button>
+          <button
+            onClick={() => handleImportClick('dresses')}
+            disabled={importing}
+            className="btn-outline flex items-center justify-center gap-2 border-dashed"
+          >
+            <Upload className="w-4 h-4" />
+            {importing && importType === 'dresses' ? '...' : t('nav.dresses')}
+          </button>
+          <button
+            onClick={() => handleImportClick('clothing')}
+            disabled={importing}
+            className="btn-outline flex items-center justify-center gap-2 border-dashed"
+          >
+            <Upload className="w-4 h-4" />
+            {importing && importType === 'clothing' ? '...' : t('nav.clothing')}
           </button>
         </div>
       </div>

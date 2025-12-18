@@ -161,7 +161,10 @@
     "exportCommercialReport": "Rapport commercial",
     "importClients": "Importer des clients",
     "importDresses": "Importer des robes",
-    "importClothing": "Importer des vêtements"
+    "importClothing": "Importer des vêtements",
+    "importSuccess": "Import réussi",
+    "importFailed": "Échec de l'import",
+    "importDescription": "Importez des données depuis un fichier Excel (.xlsx). Téléchargez d'abord un modèle via l'export pour voir le format attendu."
   },
   "common": {
     "save": "Enregistrer",
