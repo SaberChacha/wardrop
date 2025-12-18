@@ -38,9 +38,8 @@ app = FastAPI(
     title=settings.app_name,
     description="Wedding Dress Rental and Sales Management Dashboard",
     version="1.0.0",
-    lifespan=lifespan,
-    # Disable automatic trailing slash redirects to avoid HTTP redirect issues
-    redirect_slashes=False
+    lifespan=lifespan
+    # Trailing slash redirects are enabled (default) - ProxyHeadersMiddleware handles HTTPS
 )
 
 # Add proxy headers middleware FIRST (before CORS)
