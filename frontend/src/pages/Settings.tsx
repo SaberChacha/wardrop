@@ -4,7 +4,7 @@ import { useDropzone } from 'react-dropzone'
 import { Upload, Trash2, Save, Globe, Building2, Coins, Image } from 'lucide-react'
 import { useSettings } from '../contexts/SettingsContext'
 
-const API_URL = import.meta.env.VITE_API_URL || ''
+// No API_URL needed for uploads - they're served at /uploads/ directly
 
 export default function Settings() {
   const { t, i18n } = useTranslation()
@@ -187,7 +187,7 @@ export default function Settings() {
               <p className="text-sm text-text-secondary mb-3">{t('settings.currentLogo')}</p>
               <div className="relative inline-block">
                 <img
-                  src={`${API_URL}${settings.logo_path}`}
+                  src={settings.logo_path}
                   alt="Brand Logo"
                   className="max-w-[200px] max-h-[100px] object-contain rounded-lg border border-border"
                 />

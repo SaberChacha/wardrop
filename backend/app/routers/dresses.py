@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from typing import List, Optional
+from sqlalchemy import or_, asc, desc
+from typing import List, Optional, Literal
 import os
 import uuid
 from datetime import datetime
@@ -24,10 +24,12 @@ async def get_dresses(
     status: Optional[str] = None,
     category: Optional[str] = None,
     size: Optional[str] = None,
+    sort_by: Optional[str] = Query("created_at", description="Field to sort by: name, rental_price, created_at"),
+    sort_order: Optional[Literal["asc", "desc"]] = Query("desc", description="Sort order"),
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    """Get all dresses with optional filters and pagination"""
+    """Get all dresses with optional filters, sorting, and pagination"""
     query = db.query(Dress)
     
     if search:
@@ -49,7 +51,15 @@ async def get_dresses(
         query = query.filter(Dress.size == size)
     
     total = query.count()
-    dresses = query.order_by(Dress.created_at.desc()).offset(skip).limit(limit).all()
+    
+    # Apply sorting
+    sort_column = getattr(Dress, sort_by, Dress.created_at)
+    if sort_order == "asc":
+        query = query.order_by(asc(sort_column))
+    else:
+        query = query.order_by(desc(sort_column))
+    
+    dresses = query.offset(skip).limit(limit).all()
     
     return {"dresses": dresses, "total": total}
 

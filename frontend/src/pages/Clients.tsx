@@ -7,6 +7,8 @@ import { formatDate } from '../lib/utils'
 import Modal from '../components/ui/Modal'
 import ClientForm from '../components/forms/ClientForm'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import Pagination from '../components/ui/Pagination'
+import SortDropdown from '../components/ui/SortDropdown'
 
 export default function Clients() {
   const { t, i18n } = useTranslation()
@@ -17,10 +19,37 @@ export default function Clients() {
   const [editingClient, setEditingClient] = useState<any>(null)
   const [deletingClient, setDeletingClient] = useState<any>(null)
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(25)
+  
+  // Sorting state
+  const [sortBy, setSortBy] = useState('created_at')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+
+  const sortOptions = [
+    { value: 'created_at', label: t('sort.dateAdded', { defaultValue: 'Date Added' }) },
+    { value: 'full_name', label: t('sort.name', { defaultValue: 'Name' }) },
+  ]
+
   const { data, isLoading } = useQuery({
-    queryKey: ['clients', search],
-    queryFn: () => clientsAPI.getAll({ search: search || undefined }),
+    queryKey: ['clients', search, currentPage, pageSize, sortBy, sortOrder],
+    queryFn: () => clientsAPI.getAll({
+      skip: (currentPage - 1) * pageSize,
+      limit: pageSize,
+      search: search || undefined,
+      sort_by: sortBy,
+      sort_order: sortOrder,
+    }),
   })
+
+  const totalPages = Math.ceil((data?.total || 0) / pageSize)
+
+  const handlePageChange = (page: number) => setCurrentPage(page)
+  const handlePageSizeChange = (size: number) => { setPageSize(size); setCurrentPage(1); }
+  const handleSortChange = (newSortBy: string, newSortOrder: 'asc' | 'desc') => {
+    setSortBy(newSortBy); setSortOrder(newSortOrder); setCurrentPage(1);
+  }
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => clientsAPI.delete(id),
@@ -56,15 +85,23 @@ export default function Clients() {
         </button>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t('clients.searchPlaceholder')}
-          className="input-field pl-10"
+      {/* Search and Sort */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+            placeholder={t('clients.searchPlaceholder')}
+            className="input-field pl-10"
+          />
+        </div>
+        <SortDropdown
+          options={sortOptions}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={handleSortChange}
         />
       </div>
 
@@ -78,6 +115,7 @@ export default function Clients() {
           {t('clients.noClients')}
         </div>
       ) : (
+        <>
         <div className="table-container">
           <table className="w-full">
             <thead>
@@ -145,6 +183,16 @@ export default function Clients() {
             </tbody>
           </table>
         </div>
+        
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={data?.total || 0}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
+        </>
       )}
 
       {/* Client Form Modal */}

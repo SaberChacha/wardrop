@@ -73,7 +73,13 @@
       "evening": "Soirée",
       "engagement": "Fiançailles",
       "traditional": "Traditionnel",
-      "other": "Autre"
+      "other": "Autre",
+      "Robe Kabyle": "Robe Kabyle",
+      "Robe de Mariée": "Robe de Mariée",
+      "Robe de Fiançailles": "Robe de Fiançailles",
+      "Robe de Soirée": "Robe de Soirée",
+      "Caftan": "Caftan",
+      "Karakou": "Karakou"
     }
   },
   "clothing": {
@@ -196,6 +202,24 @@
     "close": "Fermer",
     "yes": "Oui",
     "no": "Non"
+  },
+  "pagination": {
+    "showing": "Affichage {{start}}-{{end}} sur {{total}}",
+    "perPage": "Par page:",
+    "first": "Première page",
+    "previous": "Page précédente",
+    "next": "Page suivante",
+    "last": "Dernière page"
+  },
+  "sort": {
+    "dateAdded": "Date d'ajout",
+    "name": "Nom",
+    "price": "Prix",
+    "startDate": "Date de début",
+    "saleDate": "Date de vente",
+    "total": "Total",
+    "ascending": "Croissant",
+    "descending": "Décroissant"
   },
   "notifications": {
     "sendSMS": "Envoyer SMS",

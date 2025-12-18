@@ -7,6 +7,8 @@ import { formatCurrency, formatDate } from '../lib/utils'
 import Modal from '../components/ui/Modal'
 import SaleForm from '../components/forms/SaleForm'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import Pagination from '../components/ui/Pagination'
+import SortDropdown from '../components/ui/SortDropdown'
 
 export default function Sales() {
   const { t, i18n } = useTranslation()
@@ -16,10 +18,37 @@ export default function Sales() {
   const [editingSale, setEditingSale] = useState<any>(null)
   const [deletingSale, setDeletingSale] = useState<any>(null)
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(25)
+  
+  // Sorting state
+  const [sortBy, setSortBy] = useState('sale_date')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+
+  const sortOptions = [
+    { value: 'sale_date', label: t('sort.saleDate', { defaultValue: 'Sale Date' }) },
+    { value: 'total_price', label: t('sort.total', { defaultValue: 'Total' }) },
+    { value: 'created_at', label: t('sort.dateAdded', { defaultValue: 'Date Added' }) },
+  ]
+
   const { data, isLoading } = useQuery({
-    queryKey: ['sales'],
-    queryFn: () => salesAPI.getAll(),
+    queryKey: ['sales', currentPage, pageSize, sortBy, sortOrder],
+    queryFn: () => salesAPI.getAll({
+      skip: (currentPage - 1) * pageSize,
+      limit: pageSize,
+      sort_by: sortBy,
+      sort_order: sortOrder,
+    }),
   })
+
+  const totalPages = Math.ceil((data?.total || 0) / pageSize)
+
+  const handlePageChange = (page: number) => setCurrentPage(page)
+  const handlePageSizeChange = (size: number) => { setPageSize(size); setCurrentPage(1); }
+  const handleSortChange = (newSortBy: string, newSortOrder: 'asc' | 'desc') => {
+    setSortBy(newSortBy); setSortOrder(newSortOrder); setCurrentPage(1);
+  }
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => salesAPI.delete(id),
@@ -56,6 +85,16 @@ export default function Sales() {
         </button>
       </div>
 
+      {/* Sort */}
+      <div className="flex justify-end">
+        <SortDropdown
+          options={sortOptions}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={handleSortChange}
+        />
+      </div>
+
       {/* Table */}
       {isLoading ? (
         <div className="flex items-center justify-center h-64">
@@ -66,6 +105,7 @@ export default function Sales() {
           {t('sales.noSales')}
         </div>
       ) : (
+        <>
         <div className="table-container">
           <table className="w-full">
             <thead>
@@ -121,6 +161,16 @@ export default function Sales() {
             </tbody>
           </table>
         </div>
+        
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={data?.total || 0}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
+        </>
       )}
 
       {/* Sale Form Modal */}

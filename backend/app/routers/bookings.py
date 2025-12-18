@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_
-from typing import List, Optional
+from sqlalchemy import and_, or_, asc, desc
+from typing import List, Optional, Literal
 from datetime import date, datetime
 
 from ..database import get_db
@@ -23,10 +23,12 @@ async def get_bookings(
     dress_id: Optional[int] = None,
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
+    sort_by: Optional[str] = Query("start_date", description="Field to sort by: start_date, rental_price, created_at"),
+    sort_order: Optional[Literal["asc", "desc"]] = Query("desc", description="Sort order"),
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    """Get all bookings with optional filters and pagination"""
+    """Get all bookings with optional filters, sorting, and pagination"""
     query = db.query(Booking).options(
         joinedload(Booking.client),
         joinedload(Booking.dress)
@@ -51,7 +53,15 @@ async def get_bookings(
         query = query.filter(Booking.end_date <= end_date)
     
     total = query.count()
-    bookings = query.order_by(Booking.start_date.desc()).offset(skip).limit(limit).all()
+    
+    # Apply sorting
+    sort_column = getattr(Booking, sort_by, Booking.start_date)
+    if sort_order == "asc":
+        query = query.order_by(asc(sort_column))
+    else:
+        query = query.order_by(desc(sort_column))
+    
+    bookings = query.offset(skip).limit(limit).all()
     
     return {"bookings": bookings, "total": total}
 

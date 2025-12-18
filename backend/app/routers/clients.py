@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from typing import List, Optional
+from sqlalchemy import or_, asc, desc
+from typing import List, Optional, Literal
 
 from ..database import get_db
 from ..models.client import Client
@@ -16,10 +16,12 @@ async def get_clients(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     search: Optional[str] = None,
+    sort_by: Optional[str] = Query("created_at", description="Field to sort by: full_name, created_at"),
+    sort_order: Optional[Literal["asc", "desc"]] = Query("desc", description="Sort order"),
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    """Get all clients with optional search and pagination"""
+    """Get all clients with optional search, sorting, and pagination"""
     query = db.query(Client)
     
     if search:
@@ -33,7 +35,15 @@ async def get_clients(
         )
     
     total = query.count()
-    clients = query.order_by(Client.created_at.desc()).offset(skip).limit(limit).all()
+    
+    # Apply sorting
+    sort_column = getattr(Client, sort_by, Client.created_at)
+    if sort_order == "asc":
+        query = query.order_by(asc(sort_column))
+    else:
+        query = query.order_by(desc(sort_column))
+    
+    clients = query.offset(skip).limit(limit).all()
     
     return {"clients": clients, "total": total}
 

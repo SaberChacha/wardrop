@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
-from typing import Optional
+from sqlalchemy import asc, desc
+from typing import Optional, Literal
 from datetime import date
 
 from ..database import get_db
@@ -20,10 +21,12 @@ async def get_sales(
     clothing_id: Optional[int] = None,
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
+    sort_by: Optional[str] = Query("sale_date", description="Field to sort by: sale_date, total_price, created_at"),
+    sort_order: Optional[Literal["asc", "desc"]] = Query("desc", description="Sort order"),
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    """Get all sales with optional filters and pagination"""
+    """Get all sales with optional filters, sorting, and pagination"""
     query = db.query(Sale).options(
         joinedload(Sale.client),
         joinedload(Sale.clothing)
@@ -42,7 +45,15 @@ async def get_sales(
         query = query.filter(Sale.sale_date <= end_date)
     
     total = query.count()
-    sales = query.order_by(Sale.sale_date.desc()).offset(skip).limit(limit).all()
+    
+    # Apply sorting
+    sort_column = getattr(Sale, sort_by, Sale.sale_date)
+    if sort_order == "asc":
+        query = query.order_by(asc(sort_column))
+    else:
+        query = query.order_by(desc(sort_column))
+    
+    sales = query.offset(skip).limit(limit).all()
     
     return {"sales": sales, "total": total}
 

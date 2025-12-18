@@ -7,6 +7,9 @@ import { formatCurrency, cn } from '../lib/utils'
 import Modal from '../components/ui/Modal'
 import ClothingForm from '../components/forms/ClothingForm'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import ImageSlideshow from '../components/ui/ImageSlideshow'
+import Pagination from '../components/ui/Pagination'
+import SortDropdown from '../components/ui/SortDropdown'
 
 export default function Clothing() {
   const { t } = useTranslation()
@@ -17,10 +20,38 @@ export default function Clothing() {
   const [editingItem, setEditingItem] = useState<any>(null)
   const [deletingItem, setDeletingItem] = useState<any>(null)
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(12)
+  
+  // Sorting state
+  const [sortBy, setSortBy] = useState('created_at')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+
+  const sortOptions = [
+    { value: 'created_at', label: t('sort.dateAdded', { defaultValue: 'Date Added' }) },
+    { value: 'name', label: t('sort.name', { defaultValue: 'Name' }) },
+    { value: 'sale_price', label: t('sort.price', { defaultValue: 'Price' }) },
+  ]
+
   const { data, isLoading } = useQuery({
-    queryKey: ['clothing', search],
-    queryFn: () => clothingAPI.getAll({ search: search || undefined }),
+    queryKey: ['clothing', search, currentPage, pageSize, sortBy, sortOrder],
+    queryFn: () => clothingAPI.getAll({
+      skip: (currentPage - 1) * pageSize,
+      limit: pageSize,
+      search: search || undefined,
+      sort_by: sortBy,
+      sort_order: sortOrder,
+    }),
   })
+
+  const totalPages = Math.ceil((data?.total || 0) / pageSize)
+
+  const handlePageChange = (page: number) => setCurrentPage(page)
+  const handlePageSizeChange = (size: number) => { setPageSize(size); setCurrentPage(1); }
+  const handleSortChange = (newSortBy: string, newSortOrder: 'asc' | 'desc') => {
+    setSortBy(newSortBy); setSortOrder(newSortOrder); setCurrentPage(1);
+  }
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => clothingAPI.delete(id),
@@ -62,15 +93,23 @@ export default function Clothing() {
         </button>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t('common.search')}
-          className="input-field pl-10"
+      {/* Search and Sort */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+            placeholder={t('common.search')}
+            className="input-field pl-10"
+          />
+        </div>
+        <SortDropdown
+          options={sortOptions}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={handleSortChange}
         />
       </div>
 
@@ -84,6 +123,7 @@ export default function Clothing() {
           {t('clothing.noItems')}
         </div>
       ) : (
+        <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {data?.items?.map((item: any) => {
             const stockStatus = getStockStatus(item.stock_quantity)
@@ -92,22 +132,17 @@ export default function Clothing() {
                 key={item.id}
                 className="bg-surface rounded-xl border border-border overflow-hidden card-hover group"
               >
-                {/* Image */}
-                <div className="aspect-square relative bg-secondary/30">
-                  {item.images?.[0] ? (
-                    <img
-                      src={item.images[0].image_path}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-text-muted">
-                      <span className="text-4xl">👔</span>
-                    </div>
-                  )}
+                {/* Image Slideshow */}
+                <div className="relative">
+                  <ImageSlideshow
+                    images={item.images || []}
+                    alt={item.name}
+                    aspectRatio="square"
+                    fallbackEmoji="👔"
+                  />
 
                   {/* Stock badge */}
-                  <div className="absolute top-3 right-3">
+                  <div className="absolute top-3 right-3 z-10">
                     <span className={cn('badge', stockStatus.class)}>
                       {stockStatus.label}
                     </span>
@@ -115,13 +150,13 @@ export default function Clothing() {
 
                   {/* Low stock warning */}
                   {item.stock_quantity > 0 && item.stock_quantity < 3 && (
-                    <div className="absolute top-3 left-3">
+                    <div className="absolute top-3 left-3 z-10">
                       <AlertTriangle className="w-5 h-5 text-warning" />
                     </div>
                   )}
 
                   {/* Actions overlay */}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-20">
                     <button
                       onClick={() => handleEdit(item)}
                       className="p-3 rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors"
@@ -156,6 +191,16 @@ export default function Clothing() {
             )
           })}
         </div>
+        
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={data?.total || 0}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
+        </>
       )}
 
       {/* Clothing Form Modal */}

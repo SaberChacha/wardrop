@@ -58,6 +58,8 @@ export const clientsAPI = {
     skip?: number;
     limit?: number;
     search?: string;
+    sort_by?: string;
+    sort_order?: "asc" | "desc";
   }) => {
     const response = await api.get("/clients", { params });
     return response.data;
@@ -89,6 +91,8 @@ export const dressesAPI = {
     status?: string;
     category?: string;
     size?: string;
+    sort_by?: string;
+    sort_order?: "asc" | "desc";
   }) => {
     const response = await api.get("/dresses", { params });
     return response.data;
@@ -132,6 +136,8 @@ export const clothingAPI = {
     category?: string;
     size?: string;
     in_stock?: boolean;
+    sort_by?: string;
+    sort_order?: "asc" | "desc";
   }) => {
     const response = await api.get("/clothing", { params });
     return response.data;
@@ -179,6 +185,8 @@ export const bookingsAPI = {
     dress_id?: number;
     start_date?: string;
     end_date?: string;
+    sort_by?: string;
+    sort_order?: "asc" | "desc";
   }) => {
     const response = await api.get("/bookings", { params });
     return response.data;
@@ -216,6 +224,8 @@ export const salesAPI = {
     clothing_id?: number;
     start_date?: string;
     end_date?: string;
+    sort_by?: string;
+    sort_order?: "asc" | "desc";
   }) => {
     const response = await api.get("/sales", { params });
     return response.data;

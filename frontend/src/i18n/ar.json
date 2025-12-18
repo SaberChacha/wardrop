@@ -73,7 +73,13 @@
       "evening": "سهرة",
       "engagement": "خطوبة",
       "traditional": "تقليدي",
-      "other": "أخرى"
+      "other": "أخرى",
+      "Robe Kabyle": "فستان قبائلي",
+      "Robe de Mariée": "فستان زفاف",
+      "Robe de Fiançailles": "فستان خطوبة",
+      "Robe de Soirée": "فستان سهرة",
+      "Caftan": "قفطان",
+      "Karakou": "كاراكو"
     }
   },
   "clothing": {
@@ -196,6 +202,24 @@
     "close": "إغلاق",
     "yes": "نعم",
     "no": "لا"
+  },
+  "pagination": {
+    "showing": "عرض {{start}}-{{end}} من {{total}}",
+    "perPage": "لكل صفحة:",
+    "first": "الصفحة الأولى",
+    "previous": "الصفحة السابقة",
+    "next": "الصفحة التالية",
+    "last": "الصفحة الأخيرة"
+  },
+  "sort": {
+    "dateAdded": "تاريخ الإضافة",
+    "name": "الاسم",
+    "price": "السعر",
+    "startDate": "تاريخ البداية",
+    "saleDate": "تاريخ البيع",
+    "total": "الإجمالي",
+    "ascending": "تصاعدي",
+    "descending": "تنازلي"
   },
   "notifications": {
     "sendSMS": "إرسال رسالة نصية",

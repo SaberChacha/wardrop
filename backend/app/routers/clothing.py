@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from typing import List, Optional
+from sqlalchemy import or_, asc, desc
+from typing import List, Optional, Literal
 import os
 import uuid
 
@@ -23,10 +23,12 @@ async def get_clothing(
     category: Optional[str] = None,
     size: Optional[str] = None,
     in_stock: Optional[bool] = None,
+    sort_by: Optional[str] = Query("created_at", description="Field to sort by: name, sale_price, created_at"),
+    sort_order: Optional[Literal["asc", "desc"]] = Query("desc", description="Sort order"),
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    """Get all clothing items with optional filters and pagination"""
+    """Get all clothing items with optional filters, sorting, and pagination"""
     query = db.query(Clothing)
     
     if search:
@@ -51,7 +53,15 @@ async def get_clothing(
             query = query.filter(Clothing.stock_quantity == 0)
     
     total = query.count()
-    items = query.order_by(Clothing.created_at.desc()).offset(skip).limit(limit).all()
+    
+    # Apply sorting
+    sort_column = getattr(Clothing, sort_by, Clothing.created_at)
+    if sort_order == "asc":
+        query = query.order_by(asc(sort_column))
+    else:
+        query = query.order_by(desc(sort_column))
+    
+    items = query.offset(skip).limit(limit).all()
     
     return {"items": items, "total": total}
 

@@ -16,7 +16,7 @@ import {
 import { cn } from '../../lib/utils'
 import { useSettings } from '../../contexts/SettingsContext'
 
-const API_URL = import.meta.env.VITE_API_URL || ''
+// No API_URL needed for uploads - they're served at /uploads/ directly
 
 interface SidebarProps {
   isOpen: boolean
@@ -26,18 +26,24 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { t, i18n } = useTranslation()
   const { settings } = useSettings()
-  const [isRTL, setIsRTL] = useState(i18n.language === 'ar')
+  
+  // Check both i18n language and document direction for RTL
+  const getIsRTL = () => i18n.language === 'ar' || document.documentElement.dir === 'rtl'
+  const [isRTL, setIsRTL] = useState(getIsRTL())
 
   useEffect(() => {
     const handleLanguageChange = (lang: string) => {
       setIsRTL(lang === 'ar')
     }
     
+    // Also update when settings language changes
+    setIsRTL(getIsRTL())
+    
     i18n.on('languageChanged', handleLanguageChange)
     return () => {
       i18n.off('languageChanged', handleLanguageChange)
     }
-  }, [i18n])
+  }, [i18n, settings?.language])
 
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: t('nav.dashboard') },
@@ -69,7 +75,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="flex items-center gap-3">
           {settings?.logo_path ? (
             <img 
-              src={`${API_URL}${settings.logo_path}`} 
+              src={settings.logo_path} 
               alt={settings.brand_name || 'Logo'}
               className="w-10 h-10 rounded-xl object-contain"
             />

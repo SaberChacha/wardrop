@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, Edit, Trash2, Calendar } from 'lucide-react'
+import { Plus, Edit, Trash2, Calendar } from 'lucide-react'
 import { bookingsAPI } from '../services/api'
 import { formatCurrency, formatDate, getStatusColor } from '../lib/utils'
 import Modal from '../components/ui/Modal'
 import BookingForm from '../components/forms/BookingForm'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import Pagination from '../components/ui/Pagination'
+import SortDropdown from '../components/ui/SortDropdown'
 
 export default function Bookings() {
   const { t, i18n } = useTranslation()
@@ -17,13 +19,39 @@ export default function Bookings() {
   const [editingBooking, setEditingBooking] = useState<any>(null)
   const [deletingBooking, setDeletingBooking] = useState<any>(null)
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(25)
+  
+  // Sorting state
+  const [sortBy, setSortBy] = useState('start_date')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+
+  const sortOptions = [
+    { value: 'start_date', label: t('sort.startDate', { defaultValue: 'Start Date' }) },
+    { value: 'rental_price', label: t('sort.price', { defaultValue: 'Price' }) },
+    { value: 'created_at', label: t('sort.dateAdded', { defaultValue: 'Date Added' }) },
+  ]
+
   const { data, isLoading } = useQuery({
-    queryKey: ['bookings', filters],
+    queryKey: ['bookings', filters, currentPage, pageSize, sortBy, sortOrder],
     queryFn: () => bookingsAPI.getAll({
+      skip: (currentPage - 1) * pageSize,
+      limit: pageSize,
       status: filters.status || undefined,
       deposit_status: filters.deposit_status || undefined,
+      sort_by: sortBy,
+      sort_order: sortOrder,
     }),
   })
+
+  const totalPages = Math.ceil((data?.total || 0) / pageSize)
+
+  const handlePageChange = (page: number) => setCurrentPage(page)
+  const handlePageSizeChange = (size: number) => { setPageSize(size); setCurrentPage(1); }
+  const handleSortChange = (newSortBy: string, newSortOrder: 'asc' | 'desc') => {
+    setSortBy(newSortBy); setSortOrder(newSortOrder); setCurrentPage(1);
+  }
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => bookingsAPI.delete(id),
@@ -59,11 +87,11 @@ export default function Bookings() {
         </button>
       </div>
 
-      {/* Filters */}
+      {/* Filters and Sort */}
       <div className="flex flex-wrap gap-3">
         <select
           value={filters.status}
-          onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+          onChange={(e) => { setFilters({ ...filters, status: e.target.value }); setCurrentPage(1); }}
           className="select-field w-auto"
         >
           <option value="">{t('bookings.bookingStatus')}</option>
@@ -75,7 +103,7 @@ export default function Bookings() {
         
         <select
           value={filters.deposit_status}
-          onChange={(e) => setFilters({ ...filters, deposit_status: e.target.value })}
+          onChange={(e) => { setFilters({ ...filters, deposit_status: e.target.value }); setCurrentPage(1); }}
           className="select-field w-auto"
         >
           <option value="">{t('bookings.depositStatus')}</option>
@@ -84,6 +112,13 @@ export default function Bookings() {
           <option value="returned">{t('bookings.depositStatuses.returned')}</option>
           <option value="forfeited">{t('bookings.depositStatuses.forfeited')}</option>
         </select>
+
+        <SortDropdown
+          options={sortOptions}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={handleSortChange}
+        />
       </div>
 
       {/* Table */}
@@ -96,6 +131,7 @@ export default function Bookings() {
           {t('bookings.noBookings')}
         </div>
       ) : (
+        <>
         <div className="table-container">
           <table className="w-full">
             <thead>
@@ -162,6 +198,16 @@ export default function Bookings() {
             </tbody>
           </table>
         </div>
+        
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={data?.total || 0}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
+        </>
       )}
 
       {/* Booking Form Modal */}

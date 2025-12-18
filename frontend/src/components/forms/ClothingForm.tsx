@@ -5,7 +5,7 @@ import { useDropzone } from 'react-dropzone'
 import { Upload, X, Trash2 } from 'lucide-react'
 import { clothingAPI } from '../../services/api'
 
-const API_URL = import.meta.env.VITE_API_URL || ''
+// No API_URL needed for uploads - they're served at /uploads/ directly
 
 interface ClothingFormProps {
   item?: any
@@ -188,7 +188,7 @@ export default function ClothingForm({ item, onSuccess }: ClothingFormProps) {
             onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
             className="input-field"
             min="0"
-            step="100"
+            step="0.01"
             placeholder={t('clothing.purchasePricePlaceholder')}
           />
         </div>
@@ -202,7 +202,7 @@ export default function ClothingForm({ item, onSuccess }: ClothingFormProps) {
             onChange={(e) => setFormData({ ...formData, sale_price: e.target.value })}
             className="input-field"
             min="0"
-            step="100"
+            step="0.01"
             required
           />
         </div>
@@ -243,7 +243,7 @@ export default function ClothingForm({ item, onSuccess }: ClothingFormProps) {
             {existingImages.map((image) => (
               <div key={image.id} className="relative group">
                 <img
-                  src={`${API_URL}${image.image_path}`}
+                  src={image.image_path}
                   alt=""
                   className="w-24 h-24 object-cover rounded-lg border border-border"
                 />
