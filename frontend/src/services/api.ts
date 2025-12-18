@@ -1,15 +1,20 @@
 import axios from 'axios'
 
-// Get API base URL - use current origin to ensure same protocol (HTTP/HTTPS)
-const getApiBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    return `${window.location.origin}/api`
-  }
-  return '/api'
+// Determine API base URL based on environment
+// In production, always use HTTPS
+const getBaseUrl = (): string => {
+  if (typeof window === 'undefined') return '/api'
+  
+  const { protocol, host } = window.location
+  // Always use HTTPS in production
+  const secureProtocol = protocol === 'http:' && host.includes('velvetnebula.cloud') 
+    ? 'https:' 
+    : protocol
+  return `${secureProtocol}//${host}/api`
 }
 
 const api = axios.create({
-  baseURL: getApiBaseUrl(),
+  baseURL: getBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
