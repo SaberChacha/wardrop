@@ -1,0 +1,198 @@
+{
+  "app": {
+    "name": "Wardrop",
+    "tagline": "Gestion de Location de Robes"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "clients": "Clients",
+    "dresses": "Robes",
+    "clothing": "Vêtements",
+    "bookings": "Réservations",
+    "sales": "Ventes",
+    "calendar": "Calendrier",
+    "reports": "Rapports",
+    "settings": "Paramètres"
+  },
+  "auth": {
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oublié?",
+    "welcomeBack": "Bienvenue",
+    "loginSubtitle": "Connectez-vous pour gérer votre boutique"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "totalClients": "Total Clients",
+    "totalDresses": "Total Robes",
+    "totalClothing": "Total Vêtements",
+    "activeBookings": "Réservations Actives",
+    "monthlyRevenue": "Revenu Mensuel",
+    "rentalRevenue": "Location",
+    "salesRevenue": "Ventes",
+    "pendingDeposits": "Dépôts en attente",
+    "lowStock": "Stock Faible",
+    "upcomingReturns": "Retours à venir"
+  },
+  "clients": {
+    "title": "Clients",
+    "addClient": "Ajouter un client",
+    "editClient": "Modifier le client",
+    "fullName": "Nom complet",
+    "phone": "Téléphone",
+    "whatsapp": "WhatsApp",
+    "address": "Adresse",
+    "notes": "Notes",
+    "noClients": "Aucun client trouvé",
+    "searchPlaceholder": "Rechercher par nom ou téléphone..."
+  },
+  "dresses": {
+    "title": "Robes",
+    "addDress": "Ajouter une robe",
+    "editDress": "Modifier la robe",
+    "name": "Nom",
+    "category": "Catégorie",
+    "size": "Taille",
+    "color": "Couleur",
+    "rentalPrice": "Prix de location",
+    "depositAmount": "Montant du dépôt",
+    "status": "Statut",
+    "description": "Description",
+    "images": "Images",
+    "uploadImages": "Télécharger des images",
+    "noDresses": "Aucune robe trouvée",
+    "available": "Disponible",
+    "rented": "Louée",
+    "maintenance": "En maintenance",
+    "categories": {
+      "wedding": "Mariage",
+      "evening": "Soirée",
+      "engagement": "Fiançailles",
+      "traditional": "Traditionnel",
+      "other": "Autre"
+    }
+  },
+  "clothing": {
+    "title": "Vêtements",
+    "addItem": "Ajouter un article",
+    "editItem": "Modifier l'article",
+    "name": "Nom",
+    "category": "Catégorie",
+    "size": "Taille",
+    "color": "Couleur",
+    "salePrice": "Prix de vente",
+    "stockQuantity": "Quantité en stock",
+    "description": "Description",
+    "noItems": "Aucun article trouvé",
+    "inStock": "En stock",
+    "outOfStock": "Rupture de stock",
+    "lowStock": "Stock faible"
+  },
+  "bookings": {
+    "title": "Réservations",
+    "addBooking": "Nouvelle réservation",
+    "editBooking": "Modifier la réservation",
+    "client": "Client",
+    "dress": "Robe",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "rentalPrice": "Prix de location",
+    "depositAmount": "Montant du dépôt",
+    "depositStatus": "Statut du dépôt",
+    "bookingStatus": "Statut de réservation",
+    "notes": "Notes",
+    "noBookings": "Aucune réservation trouvée",
+    "depositStatuses": {
+      "pending": "En attente",
+      "paid": "Payé",
+      "returned": "Retourné",
+      "forfeited": "Perdu"
+    },
+    "bookingStatuses": {
+      "confirmed": "Confirmée",
+      "in_progress": "En cours",
+      "completed": "Terminée",
+      "cancelled": "Annulée"
+    }
+  },
+  "sales": {
+    "title": "Ventes",
+    "addSale": "Nouvelle vente",
+    "editSale": "Modifier la vente",
+    "client": "Client",
+    "item": "Article",
+    "quantity": "Quantité",
+    "unitPrice": "Prix unitaire",
+    "totalPrice": "Prix total",
+    "saleDate": "Date de vente",
+    "notes": "Notes",
+    "noSales": "Aucune vente trouvée"
+  },
+  "calendar": {
+    "title": "Calendrier",
+    "allDresses": "Toutes les robes",
+    "filterByDress": "Filtrer par robe"
+  },
+  "reports": {
+    "title": "Rapports",
+    "earnings": "Revenus",
+    "topDresses": "Robes les plus louées",
+    "topClients": "Meilleurs clients",
+    "period": "Période",
+    "daily": "Quotidien",
+    "weekly": "Hebdomadaire",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "totalRevenue": "Revenu total",
+    "totalRentals": "Total locations",
+    "totalSales": "Total ventes",
+    "exportReport": "Exporter le rapport"
+  },
+  "export": {
+    "export": "Exporter",
+    "import": "Importer",
+    "exportClients": "Exporter les clients",
+    "exportDresses": "Exporter les robes",
+    "exportClothing": "Exporter les vêtements",
+    "exportBookings": "Exporter les réservations",
+    "exportSales": "Exporter les ventes",
+    "exportCommercialReport": "Rapport commercial",
+    "importClients": "Importer des clients",
+    "importDresses": "Importer des robes",
+    "importClothing": "Importer des vêtements"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "actions": "Actions",
+    "loading": "Chargement...",
+    "noData": "Aucune donnée",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer?",
+    "success": "Succès",
+    "error": "Erreur",
+    "currency": "DZD",
+    "all": "Tous",
+    "from": "Du",
+    "to": "Au",
+    "view": "Voir",
+    "details": "Détails",
+    "close": "Fermer",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "notifications": {
+    "sendSMS": "Envoyer SMS",
+    "sendWhatsApp": "Envoyer WhatsApp",
+    "confirmationSent": "Confirmation envoyée",
+    "reminderSent": "Rappel envoyé",
+    "messageSent": "Message envoyé avec succès"
+  }
+}
+

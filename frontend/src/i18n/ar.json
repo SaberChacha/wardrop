@@ -1,0 +1,198 @@
+{
+  "app": {
+    "name": "واردروب",
+    "tagline": "إدارة تأجير الفساتين"
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "clients": "العملاء",
+    "dresses": "الفساتين",
+    "clothing": "الملابس",
+    "bookings": "الحجوزات",
+    "sales": "المبيعات",
+    "calendar": "التقويم",
+    "reports": "التقارير",
+    "settings": "الإعدادات"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "welcomeBack": "مرحباً بعودتك",
+    "loginSubtitle": "سجّل دخولك لإدارة متجرك"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "totalClients": "إجمالي العملاء",
+    "totalDresses": "إجمالي الفساتين",
+    "totalClothing": "إجمالي الملابس",
+    "activeBookings": "الحجوزات النشطة",
+    "monthlyRevenue": "الإيرادات الشهرية",
+    "rentalRevenue": "التأجير",
+    "salesRevenue": "المبيعات",
+    "pendingDeposits": "الضمانات المعلقة",
+    "lowStock": "مخزون منخفض",
+    "upcomingReturns": "الإرجاعات القادمة"
+  },
+  "clients": {
+    "title": "العملاء",
+    "addClient": "إضافة عميل",
+    "editClient": "تعديل العميل",
+    "fullName": "الاسم الكامل",
+    "phone": "الهاتف",
+    "whatsapp": "واتساب",
+    "address": "العنوان",
+    "notes": "ملاحظات",
+    "noClients": "لا يوجد عملاء",
+    "searchPlaceholder": "البحث بالاسم أو الهاتف..."
+  },
+  "dresses": {
+    "title": "الفساتين",
+    "addDress": "إضافة فستان",
+    "editDress": "تعديل الفستان",
+    "name": "الاسم",
+    "category": "الفئة",
+    "size": "المقاس",
+    "color": "اللون",
+    "rentalPrice": "سعر التأجير",
+    "depositAmount": "مبلغ الضمان",
+    "status": "الحالة",
+    "description": "الوصف",
+    "images": "الصور",
+    "uploadImages": "رفع الصور",
+    "noDresses": "لا توجد فساتين",
+    "available": "متاح",
+    "rented": "مؤجر",
+    "maintenance": "صيانة",
+    "categories": {
+      "wedding": "زفاف",
+      "evening": "سهرة",
+      "engagement": "خطوبة",
+      "traditional": "تقليدي",
+      "other": "أخرى"
+    }
+  },
+  "clothing": {
+    "title": "الملابس",
+    "addItem": "إضافة منتج",
+    "editItem": "تعديل المنتج",
+    "name": "الاسم",
+    "category": "الفئة",
+    "size": "المقاس",
+    "color": "اللون",
+    "salePrice": "سعر البيع",
+    "stockQuantity": "الكمية المتوفرة",
+    "description": "الوصف",
+    "noItems": "لا توجد منتجات",
+    "inStock": "متوفر",
+    "outOfStock": "نفذ المخزون",
+    "lowStock": "مخزون منخفض"
+  },
+  "bookings": {
+    "title": "الحجوزات",
+    "addBooking": "حجز جديد",
+    "editBooking": "تعديل الحجز",
+    "client": "العميل",
+    "dress": "الفستان",
+    "startDate": "تاريخ البداية",
+    "endDate": "تاريخ النهاية",
+    "rentalPrice": "سعر التأجير",
+    "depositAmount": "مبلغ الضمان",
+    "depositStatus": "حالة الضمان",
+    "bookingStatus": "حالة الحجز",
+    "notes": "ملاحظات",
+    "noBookings": "لا توجد حجوزات",
+    "depositStatuses": {
+      "pending": "معلق",
+      "paid": "مدفوع",
+      "returned": "مسترد",
+      "forfeited": "مصادر"
+    },
+    "bookingStatuses": {
+      "confirmed": "مؤكد",
+      "in_progress": "جاري",
+      "completed": "مكتمل",
+      "cancelled": "ملغي"
+    }
+  },
+  "sales": {
+    "title": "المبيعات",
+    "addSale": "بيع جديد",
+    "editSale": "تعديل البيع",
+    "client": "العميل",
+    "item": "المنتج",
+    "quantity": "الكمية",
+    "unitPrice": "سعر الوحدة",
+    "totalPrice": "السعر الإجمالي",
+    "saleDate": "تاريخ البيع",
+    "notes": "ملاحظات",
+    "noSales": "لا توجد مبيعات"
+  },
+  "calendar": {
+    "title": "التقويم",
+    "allDresses": "جميع الفساتين",
+    "filterByDress": "تصفية حسب الفستان"
+  },
+  "reports": {
+    "title": "التقارير",
+    "earnings": "الإيرادات",
+    "topDresses": "أكثر الفساتين تأجيراً",
+    "topClients": "أفضل العملاء",
+    "period": "الفترة",
+    "daily": "يومي",
+    "weekly": "أسبوعي",
+    "monthly": "شهري",
+    "yearly": "سنوي",
+    "totalRevenue": "إجمالي الإيرادات",
+    "totalRentals": "إجمالي التأجير",
+    "totalSales": "إجمالي المبيعات",
+    "exportReport": "تصدير التقرير"
+  },
+  "export": {
+    "export": "تصدير",
+    "import": "استيراد",
+    "exportClients": "تصدير العملاء",
+    "exportDresses": "تصدير الفساتين",
+    "exportClothing": "تصدير الملابس",
+    "exportBookings": "تصدير الحجوزات",
+    "exportSales": "تصدير المبيعات",
+    "exportCommercialReport": "التقرير التجاري",
+    "importClients": "استيراد العملاء",
+    "importDresses": "استيراد الفساتين",
+    "importClothing": "استيراد الملابس"
+  },
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "add": "إضافة",
+    "search": "بحث",
+    "filter": "تصفية",
+    "actions": "إجراءات",
+    "loading": "جاري التحميل...",
+    "noData": "لا توجد بيانات",
+    "confirmDelete": "هل أنت متأكد من الحذف؟",
+    "success": "نجاح",
+    "error": "خطأ",
+    "currency": "د.ج",
+    "all": "الكل",
+    "from": "من",
+    "to": "إلى",
+    "view": "عرض",
+    "details": "تفاصيل",
+    "close": "إغلاق",
+    "yes": "نعم",
+    "no": "لا"
+  },
+  "notifications": {
+    "sendSMS": "إرسال رسالة نصية",
+    "sendWhatsApp": "إرسال واتساب",
+    "confirmationSent": "تم إرسال التأكيد",
+    "reminderSent": "تم إرسال التذكير",
+    "messageSent": "تم إرسال الرسالة بنجاح"
+  }
+}
+

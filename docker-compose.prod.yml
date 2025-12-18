@@ -1,0 +1,84 @@
+version: "3.8"
+
+# Wardrop Production Deployment
+# 
+# Usage:
+#   1. Create .env file with your secrets
+#   2. docker-compose -f docker-compose.prod.yml build
+#   3. docker-compose -f docker-compose.prod.yml up -d
+#   4. docker-compose -f docker-compose.prod.yml exec wardrop-backend alembic upgrade head
+
+services:
+  wardrop-postgres:
+    image: postgres:15-alpine
+    container_name: wardrop-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-wardrop}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wardrop_secure_password_change_me}
+      POSTGRES_DB: ${POSTGRES_DB:-wardrop}
+    volumes:
+      - wardrop_postgres_data:/var/lib/postgresql/data
+    networks:
+      - wardrop-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wardrop} -d ${POSTGRES_DB:-wardrop}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  wardrop-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: wardrop-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-wardrop}:${POSTGRES_PASSWORD:-wardrop_secure_password_change_me}@wardrop-postgres:5432/${POSTGRES_DB:-wardrop}
+      SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-production}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER:-}
+      TWILIO_WHATSAPP_NUMBER: ${TWILIO_WHATSAPP_NUMBER:-}
+    volumes:
+      - wardrop_uploads:/app/uploads
+    depends_on:
+      wardrop-postgres:
+        condition: service_healthy
+    networks:
+      - wardrop-network
+
+  wardrop-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: wardrop-frontend
+    restart: unless-stopped
+    depends_on:
+      - wardrop-backend
+    networks:
+      - wardrop-network
+
+  # Nginx reverse proxy for Wardrop
+  # This handles SSL termination and proxies to frontend
+  wardrop-nginx:
+    image: nginx:alpine
+    container_name: wardrop-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"  # Change this port if 8080 is taken
+    volumes:
+      - ./nginx/wardrop-standalone.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - wardrop-frontend
+    networks:
+      - wardrop-network
+
+volumes:
+  wardrop_postgres_data:
+  wardrop_uploads:
+
+networks:
+  wardrop-network:
+    driver: bridge
+
