@@ -1,9 +1,15 @@
 import axios from 'axios'
 
-const API_BASE_URL = '/api'
+// Get API base URL - use current origin to ensure same protocol (HTTP/HTTPS)
+const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    return `${window.location.origin}/api`
+  }
+  return '/api'
+}
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
