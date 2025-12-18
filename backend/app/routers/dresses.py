@@ -197,7 +197,8 @@ async def delete_dress_image(
         raise HTTPException(status_code=404, detail="Image not found")
     
     # Delete file from disk
-    filepath = f".{image.image_path}"
+    filename = image.image_path.replace("/uploads/", "")
+    filepath = os.path.join(settings.upload_dir, filename)
     if os.path.exists(filepath):
         os.remove(filepath)
     
@@ -219,7 +220,8 @@ async def delete_dress(
     
     # Delete associated images from disk
     for image in dress.images:
-        filepath = f".{image.image_path}"
+        filename = image.image_path.replace("/uploads/", "")
+        filepath = os.path.join(settings.upload_dir, filename)
         if os.path.exists(filepath):
             os.remove(filepath)
     

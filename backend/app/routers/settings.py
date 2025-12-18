@@ -84,7 +84,9 @@ async def upload_logo(
     
     # Delete old logo if exists
     if settings.logo_path:
-        old_path = f".{settings.logo_path}"
+        # Extract filename from path like /uploads/logos/filename.png
+        old_filename = settings.logo_path.replace("/uploads/", "")
+        old_path = os.path.join(config.upload_dir, old_filename)
         if os.path.exists(old_path):
             os.remove(old_path)
     
@@ -112,7 +114,9 @@ async def delete_logo(
     settings = get_or_create_settings(db)
     
     if settings.logo_path:
-        filepath = f".{settings.logo_path}"
+        # Extract filename from path like /uploads/logos/filename.png
+        filename = settings.logo_path.replace("/uploads/", "")
+        filepath = os.path.join(config.upload_dir, filename)
         if os.path.exists(filepath):
             os.remove(filepath)
         settings.logo_path = None

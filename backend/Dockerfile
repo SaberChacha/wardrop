@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create uploads directory
-RUN mkdir -p uploads/dresses uploads/clothing
+RUN mkdir -p uploads/dresses uploads/clothing uploads/logos
 
 # Expose port
 EXPOSE 8000

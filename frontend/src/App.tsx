@@ -47,9 +47,21 @@ function App() {
 
   // Set document direction based on language
   useEffect(() => {
-    document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr'
-    document.documentElement.lang = i18n.language
-  }, [i18n.language])
+    const updateDirection = (lang: string) => {
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
+      document.documentElement.lang = lang
+    }
+    
+    // Set initial direction
+    updateDirection(i18n.language)
+    
+    // Listen for language changes
+    i18n.on('languageChanged', updateDirection)
+    
+    return () => {
+      i18n.off('languageChanged', updateDirection)
+    }
+  }, [i18n])
 
   return (
     <Routes>

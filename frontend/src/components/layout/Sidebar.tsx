@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -25,7 +26,18 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { t, i18n } = useTranslation()
   const { settings } = useSettings()
-  const isRTL = i18n.language === 'ar'
+  const [isRTL, setIsRTL] = useState(i18n.language === 'ar')
+
+  useEffect(() => {
+    const handleLanguageChange = (lang: string) => {
+      setIsRTL(lang === 'ar')
+    }
+    
+    i18n.on('languageChanged', handleLanguageChange)
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange)
+    }
+  }, [i18n])
 
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: t('nav.dashboard') },

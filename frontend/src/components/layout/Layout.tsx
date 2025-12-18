@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import Sidebar from './Sidebar'
 import Header from './Header'
@@ -10,7 +10,18 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { i18n } = useTranslation()
-  const isRTL = i18n.language === 'ar'
+  const [isRTL, setIsRTL] = useState(i18n.language === 'ar')
+
+  useEffect(() => {
+    const handleLanguageChange = (lang: string) => {
+      setIsRTL(lang === 'ar')
+    }
+    
+    i18n.on('languageChanged', handleLanguageChange)
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange)
+    }
+  }, [i18n])
 
   return (
     <div className="min-h-screen bg-background">

@@ -98,7 +98,15 @@ export default function ClothingForm({ item, onSuccess }: ClothingFormProps) {
     e.preventDefault()
     
     if (item) {
-      updateMutation.mutate(formData)
+      // Clean up the data - convert empty strings to null for optional fields
+      const cleanData = {
+        ...formData,
+        purchase_price: formData.purchase_price === '' ? null : Number(formData.purchase_price),
+        sale_price: Number(formData.sale_price),
+        stock_quantity: Number(formData.stock_quantity),
+        description: formData.description || null,
+      }
+      updateMutation.mutate(cleanData)
     } else {
       const data = new FormData()
       Object.entries(formData).forEach(([key, value]) => {
