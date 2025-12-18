@@ -8,6 +8,8 @@ import os
 from .config import get_settings
 from .database import engine, Base
 from .routers import auth, clients, dresses, clothing, bookings, sales, reports, export, notifications
+from .routers import settings as settings_router
+from .services.scheduler import start_scheduler, stop_scheduler
 
 settings = get_settings()
 
@@ -30,8 +32,15 @@ async def lifespan(app: FastAPI):
     os.makedirs(settings.upload_dir, exist_ok=True)
     os.makedirs(f"{settings.upload_dir}/dresses", exist_ok=True)
     os.makedirs(f"{settings.upload_dir}/clothing", exist_ok=True)
+    os.makedirs(f"{settings.upload_dir}/logos", exist_ok=True)
+    
+    # Start the scheduler for automatic booking status updates
+    start_scheduler()
+    
     yield
-    # Shutdown: Clean up if needed
+    
+    # Shutdown: Stop scheduler
+    stop_scheduler()
 
 
 app = FastAPI(
@@ -72,6 +81,7 @@ app.include_router(sales.router, prefix="/api/sales", tags=["Sales"])
 app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 app.include_router(export.router, prefix="/api/export", tags=["Export/Import"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
+app.include_router(settings_router.router, prefix="/api/settings", tags=["Settings"])
 
 
 @app.get("/")

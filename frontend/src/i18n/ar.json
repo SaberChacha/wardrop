@@ -32,9 +32,11 @@
     "monthlyRevenue": "الإيرادات الشهرية",
     "rentalRevenue": "التأجير",
     "salesRevenue": "المبيعات",
+    "salesProfit": "الربح",
     "pendingDeposits": "الضمانات المعلقة",
     "lowStock": "مخزون منخفض",
-    "upcomingReturns": "الإرجاعات القادمة"
+    "upcomingReturns": "الإرجاعات القادمة",
+    "alerts": "التنبيهات"
   },
   "clients": {
     "title": "العملاء",
@@ -82,6 +84,8 @@
     "category": "الفئة",
     "size": "المقاس",
     "color": "اللون",
+    "purchasePrice": "سعر الشراء",
+    "purchasePricePlaceholder": "تكلفة الشراء",
     "salePrice": "سعر البيع",
     "stockQuantity": "الكمية المتوفرة",
     "description": "الوصف",
@@ -148,6 +152,9 @@
     "totalRevenue": "إجمالي الإيرادات",
     "totalRentals": "إجمالي التأجير",
     "totalSales": "إجمالي المبيعات",
+    "totalProfit": "إجمالي الربح",
+    "profit": "الربح",
+    "revenueBreakdown": "تفصيل الإيرادات",
     "exportReport": "تصدير التقرير"
   },
   "export": {
@@ -196,6 +203,15 @@
     "confirmationSent": "تم إرسال التأكيد",
     "reminderSent": "تم إرسال التذكير",
     "messageSent": "تم إرسال الرسالة بنجاح"
+  },
+  "settings": {
+    "subtitle": "تكوين إعدادات التطبيق",
+    "general": "الإعدادات العامة",
+    "brandName": "اسم العلامة التجارية",
+    "language": "اللغة",
+    "currency": "العملة",
+    "logo": "شعار العلامة التجارية",
+    "currentLogo": "الشعار الحالي",
+    "uploadLogo": "اسحب وأفلت أو انقر لتحميل شعار"
   }
 }
-

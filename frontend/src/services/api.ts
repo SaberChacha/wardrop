@@ -25,7 +25,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
-      window.location.href = "/login";
+      globalThis.location.href = "/login";
     }
     return Promise.reject(error);
   }
@@ -337,6 +337,38 @@ export const exportAPI = {
     const response = await api.post("/export/import/clothing", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
+    return response.data;
+  },
+};
+
+// Settings
+export const settingsAPI = {
+  get: async () => {
+    const response = await api.get("/settings");
+    return response.data;
+  },
+  getPublic: async () => {
+    const response = await api.get("/settings/public");
+    return response.data;
+  },
+  update: async (data: {
+    language?: string;
+    brand_name?: string;
+    currency?: string;
+  }) => {
+    const response = await api.put("/settings", data);
+    return response.data;
+  },
+  uploadLogo: async (file: File) => {
+    const formData = new FormData();
+    formData.append("logo", file);
+    const response = await api.post("/settings/logo", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+  deleteLogo: async () => {
+    const response = await api.delete("/settings/logo");
     return response.data;
   },
 };

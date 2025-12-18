@@ -28,6 +28,9 @@ twilio==8.11.1
 python-dateutil==2.8.2
 pytz==2024.1
 
+# Scheduler
+apscheduler==3.10.4
+
 # CORS
 starlette==0.35.1
 

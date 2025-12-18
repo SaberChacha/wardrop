@@ -32,9 +32,11 @@
     "monthlyRevenue": "Revenu Mensuel",
     "rentalRevenue": "Location",
     "salesRevenue": "Ventes",
+    "salesProfit": "Bénéfice",
     "pendingDeposits": "Dépôts en attente",
     "lowStock": "Stock Faible",
-    "upcomingReturns": "Retours à venir"
+    "upcomingReturns": "Retours à venir",
+    "alerts": "Alertes"
   },
   "clients": {
     "title": "Clients",
@@ -82,6 +84,8 @@
     "category": "Catégorie",
     "size": "Taille",
     "color": "Couleur",
+    "purchasePrice": "Prix d'achat",
+    "purchasePricePlaceholder": "Coût d'achat",
     "salePrice": "Prix de vente",
     "stockQuantity": "Quantité en stock",
     "description": "Description",
@@ -148,6 +152,9 @@
     "totalRevenue": "Revenu total",
     "totalRentals": "Total locations",
     "totalSales": "Total ventes",
+    "totalProfit": "Bénéfice total",
+    "profit": "Bénéfice",
+    "revenueBreakdown": "Répartition des revenus",
     "exportReport": "Exporter le rapport"
   },
   "export": {
@@ -196,6 +203,16 @@
     "confirmationSent": "Confirmation envoyée",
     "reminderSent": "Rappel envoyé",
     "messageSent": "Message envoyé avec succès"
+  },
+  "settings": {
+    "subtitle": "Configurer les paramètres de l'application",
+    "general": "Paramètres généraux",
+    "brandName": "Nom de la marque",
+    "language": "Langue",
+    "currency": "Devise",
+    "logo": "Logo de la marque",
+    "currentLogo": "Logo actuel",
+    "uploadLogo": "Glissez-déposez ou cliquez pour télécharger un logo"
   }
 }
 

@@ -3,13 +3,16 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Sparkles, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import { useSettings } from '../contexts/SettingsContext'
+
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 export default function Login() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { login, register, isAuthenticated } = useAuth()
+  const { login, isAuthenticated } = useAuth()
+  const { settings } = useSettings()
   
-  const [isRegister, setIsRegister] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -17,7 +20,6 @@ export default function Login() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    name: '',
   })
 
   // Redirect if already authenticated
@@ -32,18 +34,16 @@ export default function Login() {
     setLoading(true)
 
     try {
-      if (isRegister) {
-        await register(formData.email, formData.password, formData.name)
-      } else {
-        await login(formData.email, formData.password)
-      }
+      await login(formData.email, formData.password)
       navigate('/', { replace: true })
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Une erreur est survenue')
+      setError(err.response?.data?.detail || t('common.error'))
     } finally {
       setLoading(false)
     }
   }
+
+  const brandName = settings?.brand_name || 'Wardrop'
 
   return (
     <div className="min-h-screen flex">
@@ -55,10 +55,18 @@ export default function Login() {
         </div>
         
         <div className="relative z-10 flex flex-col items-center justify-center w-full p-12 text-white">
-          <div className="w-24 h-24 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mb-8">
-            <Sparkles className="w-12 h-12" />
-          </div>
-          <h1 className="text-5xl font-heading font-bold mb-4">Wardrop</h1>
+          {settings?.logo_path ? (
+            <img 
+              src={`${API_URL}${settings.logo_path}`} 
+              alt={brandName}
+              className="w-24 h-24 rounded-2xl object-contain mb-8 bg-white/20 backdrop-blur p-2"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mb-8">
+              <Sparkles className="w-12 h-12" />
+            </div>
+          )}
+          <h1 className="text-5xl font-heading font-bold mb-4">{brandName}</h1>
           <p className="text-xl text-white/80 text-center max-w-md">
             {t('app.tagline')}
           </p>
@@ -73,18 +81,26 @@ export default function Login() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-3xl font-heading font-bold text-primary">Wardrop</h1>
+            {settings?.logo_path ? (
+              <img 
+                src={`${API_URL}${settings.logo_path}`} 
+                alt={brandName}
+                className="w-12 h-12 rounded-xl object-contain"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+            )}
+            <h1 className="text-3xl font-heading font-bold text-primary">{brandName}</h1>
           </div>
 
           <div className="text-center mb-8">
             <h2 className="text-3xl font-heading font-semibold text-text-primary mb-2">
-              {isRegister ? 'Créer un compte' : t('auth.welcomeBack')}
+              {t('auth.welcomeBack')}
             </h2>
             <p className="text-text-secondary">
-              {isRegister ? 'Configuration initiale du dashboard' : t('auth.loginSubtitle')}
+              {t('auth.loginSubtitle')}
             </p>
           </div>
 
@@ -95,22 +111,6 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {isRegister && (
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Nom
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="input-field"
-                  placeholder="Votre nom"
-                  required
-                />
-              </div>
-            )}
-
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
                 {t('auth.email')}
@@ -134,14 +134,14 @@ export default function Login() {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="input-field pr-12"
+                  className="input-field ltr:pr-12 rtl:pl-12"
                   placeholder="••••••••"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text-primary transition-colors"
+                  className="absolute ltr:right-3 rtl:left-3 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text-primary transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -159,22 +159,12 @@ export default function Login() {
                   {t('common.loading')}
                 </span>
               ) : (
-                isRegister ? 'Créer le compte' : t('auth.login')
+                t('auth.login')
               )}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setIsRegister(!isRegister)}
-              className="text-sm text-primary hover:underline"
-            >
-              {isRegister ? 'Déjà un compte? Se connecter' : 'Première utilisation? Créer un compte'}
-            </button>
-          </div>
         </div>
       </div>
     </div>
   )
 }
-

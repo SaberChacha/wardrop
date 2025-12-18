@@ -75,6 +75,7 @@ async def create_clothing(
     category: str = Form(...),
     size: str = Form(...),
     color: str = Form(...),
+    purchase_price: Optional[float] = Form(None),
     sale_price: float = Form(...),
     stock_quantity: int = Form(...),
     description: Optional[str] = Form(None),
@@ -88,6 +89,7 @@ async def create_clothing(
         category=category,
         size=size,
         color=color,
+        purchase_price=purchase_price,
         sale_price=sale_price,
         stock_quantity=stock_quantity,
         description=description

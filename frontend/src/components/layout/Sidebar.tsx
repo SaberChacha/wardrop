@@ -9,9 +9,13 @@ import {
   Receipt,
   BarChart3,
   Calendar,
+  Settings,
   X,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { useSettings } from '../../contexts/SettingsContext'
+
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 interface SidebarProps {
   isOpen: boolean
@@ -19,7 +23,9 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const { settings } = useSettings()
+  const isRTL = i18n.language === 'ar'
 
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: t('nav.dashboard') },
@@ -30,25 +36,39 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { path: '/sales', icon: Receipt, label: t('nav.sales') },
     { path: '/calendar', icon: Calendar, label: t('nav.calendar') },
     { path: '/reports', icon: BarChart3, label: t('nav.reports') },
+    { path: '/settings', icon: Settings, label: t('nav.settings') },
   ]
 
   return (
     <aside
       className={cn(
-        'fixed top-0 left-0 z-50 h-full w-64 bg-surface border-r border-border transform transition-transform duration-300 ease-in-out',
+        'fixed top-0 z-50 h-full w-64 bg-surface transform transition-transform duration-300 ease-in-out',
+        isRTL ? 'right-0 border-l border-border' : 'left-0 border-r border-border',
         'lg:translate-x-0',
-        isOpen ? 'translate-x-0' : '-translate-x-full'
+        isOpen 
+          ? 'translate-x-0' 
+          : isRTL 
+            ? 'translate-x-full' 
+            : '-translate-x-full'
       )}
     >
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-6 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
+          {settings?.logo_path ? (
+            <img 
+              src={`${API_URL}${settings.logo_path}`} 
+              alt={settings.brand_name || 'Logo'}
+              className="w-10 h-10 rounded-xl object-contain"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+          )}
           <div>
             <h1 className="text-xl font-heading font-semibold text-primary">
-              {t('app.name')}
+              {settings?.brand_name || t('app.name')}
             </h1>
           </div>
         </div>

@@ -12,6 +12,7 @@ class Clothing(Base):
     category = Column(String(100), nullable=False)  # e.g., "Dress", "Accessories", "Shoes"
     size = Column(String(50), nullable=False)
     color = Column(String(100), nullable=False)
+    purchase_price = Column(Numeric(10, 2), nullable=True)  # Cost price for profit calculation
     sale_price = Column(Numeric(10, 2), nullable=False)
     stock_quantity = Column(Integer, default=0)
     description = Column(Text, nullable=True)

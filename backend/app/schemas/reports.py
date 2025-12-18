@@ -11,6 +11,8 @@ class DashboardStats(BaseModel):
     monthly_rental_revenue: float
     monthly_sales_revenue: float
     monthly_total_revenue: float
+    monthly_sales_cost: float
+    monthly_sales_profit: float
     pending_deposits: float
     low_stock_count: int
     upcoming_returns: int
@@ -20,6 +22,8 @@ class MonthlyEarnings(BaseModel):
     period: str
     rentals: float
     sales: float
+    sales_cost: float
+    sales_profit: float
     total: float
 
 
@@ -29,7 +33,10 @@ class EarningsReport(BaseModel):
     period_type: str
     total_rentals: float
     total_sales: float
+    total_sales_cost: float
+    total_sales_profit: float
     total_revenue: float
+    total_profit: float
     earnings_by_period: List[MonthlyEarnings]
 
 

@@ -186,11 +186,17 @@ export default function Reports() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-gradient-to-br from-primary to-primary-dark rounded-xl p-6 text-white">
           <p className="text-sm opacity-80">{t('reports.totalRevenue')}</p>
           <p className="text-3xl font-heading font-bold mt-2">
             {formatCurrency(earnings?.total_revenue || 0)}
+          </p>
+        </div>
+        <div className="bg-gradient-to-br from-success to-emerald-600 rounded-xl p-6 text-white">
+          <p className="text-sm opacity-80">{t('reports.totalProfit')}</p>
+          <p className="text-3xl font-heading font-bold mt-2">
+            {formatCurrency(earnings?.total_profit || 0)}
           </p>
         </div>
         <div className="bg-surface rounded-xl p-6 border border-border">
@@ -203,6 +209,9 @@ export default function Reports() {
           <p className="text-sm text-text-muted">{t('reports.totalSales')}</p>
           <p className="text-3xl font-heading font-bold text-accent mt-2">
             {formatCurrency(earnings?.total_sales || 0)}
+          </p>
+          <p className="text-xs text-text-muted mt-1">
+            {t('reports.profit')}: {formatCurrency(earnings?.total_sales_profit || 0)}
           </p>
         </div>
       </div>
@@ -242,7 +251,7 @@ export default function Reports() {
         {/* Revenue Breakdown */}
         <div className="bg-surface rounded-xl p-6 border border-border">
           <h3 className="text-lg font-semibold text-text-primary mb-4">
-            Revenue Breakdown
+            {t('reports.revenueBreakdown')}
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>

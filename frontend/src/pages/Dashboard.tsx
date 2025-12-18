@@ -9,6 +9,7 @@ import {
   Clock,
   AlertTriangle,
   DollarSign,
+  Wallet,
 } from 'lucide-react'
 import { reportsAPI } from '../services/api'
 import { formatCurrency } from '../lib/utils'
@@ -60,6 +61,12 @@ export default function Dashboard() {
       value: formatCurrency(stats?.monthly_sales_revenue || 0),
       icon: DollarSign,
       color: 'text-info',
+    },
+    {
+      title: t('dashboard.salesProfit'),
+      value: formatCurrency(stats?.monthly_sales_profit || 0),
+      icon: Wallet,
+      color: 'text-success',
     },
   ]
 
@@ -135,7 +142,7 @@ export default function Dashboard() {
             {formatCurrency(stats?.monthly_total_revenue || 0)}
           </p>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             {revenueCards.map((card) => (
               <div key={card.title} className="bg-white/10 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -151,7 +158,7 @@ export default function Dashboard() {
         {/* Alerts */}
         <div className="bg-surface rounded-xl p-6 border border-border">
           <h3 className="text-lg font-semibold text-text-primary mb-4">
-            Alertes
+            {t('dashboard.alerts')}
           </h3>
           <div className="space-y-4">
             {alertCards.map((card) => (

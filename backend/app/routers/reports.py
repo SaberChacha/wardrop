@@ -52,6 +52,18 @@ async def get_dashboard_stats(
         Sale.sale_date >= start_of_month
     ).scalar() or 0
     
+    # Monthly cost from sales (based on purchase_price)
+    monthly_sales_with_cost = db.query(
+        func.sum(Sale.quantity * Clothing.purchase_price)
+    ).join(
+        Clothing, Sale.clothing_id == Clothing.id
+    ).filter(
+        Sale.sale_date >= start_of_month,
+        Clothing.purchase_price.isnot(None)
+    ).scalar() or 0
+    
+    monthly_sales_profit = float(monthly_sales_revenue) - float(monthly_sales_with_cost)
+    
     # Pending deposits
     pending_deposits = db.query(func.sum(Booking.deposit_amount)).filter(
         Booking.deposit_status == "pending",
@@ -80,6 +92,8 @@ async def get_dashboard_stats(
         "monthly_rental_revenue": float(monthly_rental_revenue),
         "monthly_sales_revenue": float(monthly_sales_revenue),
         "monthly_total_revenue": float(monthly_rental_revenue + monthly_sales_revenue),
+        "monthly_sales_cost": float(monthly_sales_with_cost),
+        "monthly_sales_profit": monthly_sales_profit,
         "pending_deposits": float(pending_deposits),
         "low_stock_count": low_stock_count,
         "upcoming_returns": upcoming_returns
@@ -110,10 +124,13 @@ async def get_earnings_report(
         Booking.booking_status != "cancelled"
     ).group_by("period").all()
     
-    # Get sales earnings
+    # Get sales earnings with cost
     sales_query = db.query(
         func.date_trunc(period if period != "daily" else "day", Sale.sale_date).label("period"),
-        func.sum(Sale.total_price).label("amount")
+        func.sum(Sale.total_price).label("amount"),
+        func.sum(Sale.quantity * Clothing.purchase_price).label("cost")
+    ).join(
+        Clothing, Sale.clothing_id == Clothing.id
     ).filter(
         Sale.sale_date >= start_date,
         Sale.sale_date <= end_date
@@ -124,14 +141,15 @@ async def get_earnings_report(
     for row in rental_query:
         period_key = row.period.strftime("%Y-%m-%d") if row.period else "Unknown"
         if period_key not in periods_data:
-            periods_data[period_key] = {"rentals": 0, "sales": 0}
+            periods_data[period_key] = {"rentals": 0, "sales": 0, "sales_cost": 0}
         periods_data[period_key]["rentals"] = float(row.amount or 0)
     
     for row in sales_query:
         period_key = row.period.strftime("%Y-%m-%d") if row.period else "Unknown"
         if period_key not in periods_data:
-            periods_data[period_key] = {"rentals": 0, "sales": 0}
+            periods_data[period_key] = {"rentals": 0, "sales": 0, "sales_cost": 0}
         periods_data[period_key]["sales"] = float(row.amount or 0)
+        periods_data[period_key]["sales_cost"] = float(row.cost or 0)
     
     # Format response
     monthly_earnings = [
@@ -139,6 +157,8 @@ async def get_earnings_report(
             "period": k,
             "rentals": v["rentals"],
             "sales": v["sales"],
+            "sales_cost": v["sales_cost"],
+            "sales_profit": v["sales"] - v["sales_cost"],
             "total": v["rentals"] + v["sales"]
         }
         for k, v in sorted(periods_data.items())
@@ -146,6 +166,8 @@ async def get_earnings_report(
     
     total_rentals = sum(e["rentals"] for e in monthly_earnings)
     total_sales = sum(e["sales"] for e in monthly_earnings)
+    total_sales_cost = sum(e["sales_cost"] for e in monthly_earnings)
+    total_sales_profit = total_sales - total_sales_cost
     
     return {
         "start_date": start_date,
@@ -153,7 +175,10 @@ async def get_earnings_report(
         "period_type": period,
         "total_rentals": total_rentals,
         "total_sales": total_sales,
+        "total_sales_cost": total_sales_cost,
+        "total_sales_profit": total_sales_profit,
         "total_revenue": total_rentals + total_sales,
+        "total_profit": total_rentals + total_sales_profit,
         "earnings_by_period": monthly_earnings
     }
 

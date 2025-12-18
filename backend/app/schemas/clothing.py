@@ -18,6 +18,7 @@ class ClothingBase(BaseModel):
     category: str
     size: str
     color: str
+    purchase_price: Optional[Decimal] = None
     sale_price: Decimal
     stock_quantity: int
     description: Optional[str] = None
@@ -32,6 +33,7 @@ class ClothingUpdate(BaseModel):
     category: Optional[str] = None
     size: Optional[str] = None
     color: Optional[str] = None
+    purchase_price: Optional[Decimal] = None
     sale_price: Optional[Decimal] = None
     stock_quantity: Optional[int] = None
     description: Optional[str] = None

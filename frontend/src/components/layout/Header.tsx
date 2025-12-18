@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Menu, LogOut, Globe } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
+import { useSettings } from '../../contexts/SettingsContext'
 
 interface HeaderProps {
   onMenuClick: () => void
@@ -9,10 +10,16 @@ interface HeaderProps {
 export default function Header({ onMenuClick }: HeaderProps) {
   const { t, i18n } = useTranslation()
   const { user, logout } = useAuth()
+  const { updateSettings } = useSettings()
 
-  const toggleLanguage = () => {
+  const toggleLanguage = async () => {
     const newLang = i18n.language === 'fr' ? 'ar' : 'fr'
     i18n.changeLanguage(newLang)
+    try {
+      await updateSettings({ language: newLang })
+    } catch (error) {
+      console.error('Failed to save language preference:', error)
+    }
   }
 
   return (
@@ -43,8 +50,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </button>
 
           {/* User menu */}
-          <div className="flex items-center gap-3 pl-3 border-l border-border">
-            <div className="text-right">
+          <div className="flex items-center gap-3 ltr:pl-3 ltr:border-l rtl:pr-3 rtl:border-r border-border">
+            <div className="ltr:text-right rtl:text-left">
               <p className="text-sm font-medium text-text-primary">
                 {user?.name}
               </p>

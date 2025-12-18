@@ -2,8 +2,10 @@ import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDropzone } from 'react-dropzone'
-import { Upload, X } from 'lucide-react'
+import { Upload, X, Trash2 } from 'lucide-react'
 import { dressesAPI } from '../../services/api'
+
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 interface DressFormProps {
   dress?: any
@@ -30,6 +32,8 @@ export default function DressForm({ dress, onSuccess }: DressFormProps) {
   
   const [images, setImages] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
+  const [existingImages, setExistingImages] = useState<any[]>(dress?.images || [])
+  const [deletingImageId, setDeletingImageId] = useState<number | null>(null)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setImages((prev) => [...prev, ...acceptedFiles])
@@ -48,6 +52,27 @@ export default function DressForm({ dress, onSuccess }: DressFormProps) {
     setPreviews((prev) => prev.filter((_, i) => i !== index))
   }
 
+  const deleteExistingImageMutation = useMutation({
+    mutationFn: async (imageId: number) => {
+      setDeletingImageId(imageId)
+      return dressesAPI.deleteImage(dress.id, imageId)
+    },
+    onSuccess: (_, imageId) => {
+      setExistingImages((prev) => prev.filter((img) => img.id !== imageId))
+      queryClient.invalidateQueries({ queryKey: ['dresses'] })
+    },
+    onSettled: () => {
+      setDeletingImageId(null)
+    },
+  })
+
+  const uploadImagesMutation = useMutation({
+    mutationFn: async (formData: FormData) => dressesAPI.uploadImages(dress.id, formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dresses'] })
+    },
+  })
+
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => dressesAPI.create(data),
     onSuccess: () => {
@@ -58,7 +83,13 @@ export default function DressForm({ dress, onSuccess }: DressFormProps) {
 
   const updateMutation = useMutation({
     mutationFn: async (data: any) => dressesAPI.update(dress.id, data),
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Upload new images if any
+      if (images.length > 0) {
+        const imageFormData = new FormData()
+        images.forEach((image) => imageFormData.append('images', image))
+        await uploadImagesMutation.mutateAsync(imageFormData)
+      }
       queryClient.invalidateQueries({ queryKey: ['dresses'] })
       onSuccess()
     },
@@ -79,7 +110,7 @@ export default function DressForm({ dress, onSuccess }: DressFormProps) {
     }
   }
 
-  const isLoading = createMutation.isPending || updateMutation.isPending
+  const isLoading = createMutation.isPending || updateMutation.isPending || uploadImagesMutation.isPending
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -204,51 +235,86 @@ export default function DressForm({ dress, onSuccess }: DressFormProps) {
         />
       </div>
 
-      {/* Image Upload */}
-      {!dress && (
+      {/* Existing Images (only in edit mode) */}
+      {dress && existingImages.length > 0 && (
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
             {t('dresses.images')}
           </label>
-          
-          <div
-            {...getRootProps()}
-            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
-              isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary'
-            }`}
-          >
-            <input {...getInputProps()} />
-            <Upload className="w-8 h-8 mx-auto text-text-muted mb-2" />
-            <p className="text-sm text-text-secondary">
-              {t('dresses.uploadImages')}
-            </p>
+          <div className="flex flex-wrap gap-3">
+            {existingImages.map((image) => (
+              <div key={image.id} className="relative group">
+                <img
+                  src={`${API_URL}${image.image_path}`}
+                  alt=""
+                  className="w-24 h-24 object-cover rounded-lg border border-border"
+                />
+                <button
+                  type="button"
+                  onClick={() => deleteExistingImageMutation.mutate(image.id)}
+                  disabled={deletingImageId === image.id}
+                  className="absolute -top-2 -right-2 p-1.5 bg-error text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                >
+                  {deletingImageId === image.id ? (
+                    <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3 h-3" />
+                  )}
+                </button>
+                {image.is_primary && (
+                  <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-primary text-white text-xs rounded">
+                    Primary
+                  </span>
+                )}
+              </div>
+            ))}
           </div>
-
-          {previews.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {previews.map((preview, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={preview}
-                    alt={`Preview ${index + 1}`}
-                    className="w-20 h-20 object-cover rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute -top-2 -right-2 p-1 bg-error text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       )}
 
+      {/* Image Upload */}
+      <div>
+        <label className="block text-sm font-medium text-text-primary mb-2">
+          {dress ? t('dresses.uploadImages') : t('dresses.images')}
+        </label>
+        
+        <div
+          {...getRootProps()}
+          className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
+            isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary'
+          }`}
+        >
+          <input {...getInputProps()} />
+          <Upload className="w-8 h-8 mx-auto text-text-muted mb-2" />
+          <p className="text-sm text-text-secondary">
+            {t('dresses.uploadImages')}
+          </p>
+        </div>
+
+        {previews.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-4">
+            {previews.map((preview, index) => (
+              <div key={index} className="relative group">
+                <img
+                  src={preview}
+                  alt={`Preview ${index + 1}`}
+                  className="w-20 h-20 object-cover rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  className="absolute -top-2 -right-2 p-1 bg-error text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {(createMutation.isError || updateMutation.isError) && (
-        <p className="text-error text-sm">Une erreur est survenue</p>
+        <p className="text-error text-sm">{t('common.error')}</p>
       )}
 
       <div className="flex justify-end gap-3 pt-4">
@@ -259,4 +325,3 @@ export default function DressForm({ dress, onSuccess }: DressFormProps) {
     </form>
   )
 }
-

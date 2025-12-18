@@ -16,6 +16,7 @@ import Bookings from './pages/Bookings'
 import Sales from './pages/Sales'
 import Calendar from './pages/Calendar'
 import Reports from './pages/Reports'
+import Settings from './pages/Settings'
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -68,6 +69,7 @@ function App() {
                 <Route path="/sales" element={<Sales />} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/reports" element={<Reports />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Layout>

@@ -85,6 +85,180 @@
 [dir="rtl"] .sidebar {
   right: 0;
   left: auto;
+  transform: translateX(100%);
+}
+
+[dir="rtl"] .sidebar.translate-x-0 {
+  transform: translateX(0);
+}
+
+[dir="rtl"] .sidebar.-translate-x-full {
+  transform: translateX(100%);
+}
+
+/* RTL: Sidebar positioning for desktop */
+@media (min-width: 1024px) {
+  [dir="rtl"] .sidebar {
+    transform: translateX(0);
+  }
+  
+  [dir="rtl"] .lg\:ml-64 {
+    margin-left: 0;
+    margin-right: 16rem;
+  }
+}
+
+/* RTL: Flex direction reversal */
+[dir="rtl"] .flex-row {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .items-center.gap-2,
+[dir="rtl"] .items-center.gap-3,
+[dir="rtl"] .items-center.gap-4 {
+  flex-direction: row-reverse;
+}
+
+/* RTL: Fix icon spacing */
+[dir="rtl"] .gap-2 > svg:first-child,
+[dir="rtl"] .gap-3 > svg:first-child {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* RTL: Border adjustments */
+[dir="rtl"] .border-l {
+  border-left: none;
+  border-right-width: 1px;
+}
+
+[dir="rtl"] .border-r {
+  border-right: none;
+  border-left-width: 1px;
+}
+
+[dir="rtl"] .pl-3 {
+  padding-left: 0;
+  padding-right: 0.75rem;
+}
+
+[dir="rtl"] .pr-3 {
+  padding-right: 0;
+  padding-left: 0.75rem;
+}
+
+/* RTL: Margin adjustments */
+[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+[dir="rtl"] .ml-2 {
+  margin-left: 0;
+  margin-right: 0.5rem;
+}
+
+[dir="rtl"] .mr-2 {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+/* RTL: Text alignment in specific contexts */
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+/* RTL: Absolute positioning fixes */
+[dir="rtl"] .left-0 {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .right-0 {
+  right: auto;
+  left: 0;
+}
+
+[dir="rtl"] .-right-2 {
+  right: auto;
+  left: -0.5rem;
+}
+
+[dir="rtl"] .-left-2 {
+  left: auto;
+  right: -0.5rem;
+}
+
+/* RTL: Transform fixes */
+[dir="rtl"] .translate-x-0 {
+  transform: translateX(0);
+}
+
+/* RTL: Slide animations */
+[dir="rtl"] @keyframes slideIn {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* RTL: Table alignment */
+[dir="rtl"] table {
+  text-align: right;
+}
+
+[dir="rtl"] th,
+[dir="rtl"] td {
+  text-align: right;
+}
+
+/* RTL: Form elements */
+[dir="rtl"] input,
+[dir="rtl"] select,
+[dir="rtl"] textarea {
+  text-align: right;
+}
+
+[dir="rtl"] input[type="number"] {
+  text-align: left;
+}
+
+/* RTL: Select arrow position */
+[dir="rtl"] .select-field {
+  background-position: left 0.75rem center;
+  padding-left: 2.5rem;
+  padding-right: 1rem;
+}
+
+/* RTL: Modal and dropdown positioning */
+[dir="rtl"] .origin-top-right {
+  transform-origin: top left;
+}
+
+[dir="rtl"] .origin-top-left {
+  transform-origin: top right;
+}
+
+/* RTL: Navigation spacing */
+[dir="rtl"] nav .gap-3 {
+  flex-direction: row;
+}
+
+/* RTL: Grid items */
+[dir="rtl"] .grid {
+  direction: rtl;
+}
+
+/* RTL: Scrollbar position */
+[dir="rtl"] ::-webkit-scrollbar {
+  direction: ltr;
 }
 
 /* Animations */

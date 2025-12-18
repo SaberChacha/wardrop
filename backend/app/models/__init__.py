@@ -5,6 +5,7 @@ from .clothing import Clothing, ClothingImage
 from .booking import Booking
 from .sale import Sale
 from .notification import NotificationLog
+from .settings import Settings
 
 __all__ = [
     "Admin",
@@ -15,6 +16,7 @@ __all__ = [
     "ClothingImage",
     "Booking",
     "Sale",
-    "NotificationLog"
+    "NotificationLog",
+    "Settings"
 ]
 
