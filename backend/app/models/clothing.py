@@ -17,6 +17,7 @@ class Clothing(Base):
     stock_quantity = Column(Integer, default=0)
     description = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
     images = relationship("ClothingImage", back_populates="clothing", cascade="all, delete-orphan")

@@ -17,6 +17,7 @@ class Dress(Base):
     status = Column(String(50), default="available")  # available, rented, maintenance
     description = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
     images = relationship("DressImage", back_populates="dress", cascade="all, delete-orphan")

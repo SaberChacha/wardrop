@@ -37,6 +37,7 @@ class SaleResponse(BaseModel):
     sale_date: date
     notes: Optional[str]
     created_at: datetime
+    updated_at: Optional[datetime] = None
     client: Optional[ClientResponse] = None
     clothing: Optional[ClothingResponse] = None
 

@@ -145,7 +145,7 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
             onChange={(e) => setFormData({ ...formData, unit_price: e.target.value })}
             className="input-field"
             min="0"
-            step="100"
+            step="any"
             required
           />
         </div>

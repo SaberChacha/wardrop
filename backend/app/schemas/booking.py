@@ -45,6 +45,7 @@ class BookingResponse(BaseModel):
     booking_status: str
     notes: Optional[str]
     created_at: datetime
+    updated_at: Optional[datetime] = None
     client: Optional[ClientResponse] = None
     dress: Optional[DressResponse] = None
 

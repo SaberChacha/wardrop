@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, Edit, Trash2 } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, CheckSquare, Square, XCircle } from 'lucide-react'
 import { dressesAPI } from '../services/api'
-import { formatCurrency, getStatusColor } from '../lib/utils'
+import { formatCurrency, getStatusColor, cn } from '../lib/utils'
 import Modal from '../components/ui/Modal'
 import DressForm from '../components/forms/DressForm'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
@@ -23,6 +23,10 @@ export default function Dresses() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingDress, setEditingDress] = useState<any>(null)
   const [deletingDress, setDeletingDress] = useState<any>(null)
+
+  // Bulk selection state
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set())
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false)
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -76,6 +80,17 @@ export default function Dresses() {
     },
   })
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: number[]) => {
+      await Promise.all(ids.map(id => dressesAPI.delete(id)))
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dresses'] })
+      setSelectedItems(new Set())
+      setIsBulkDeleteOpen(false)
+    },
+  })
+
   const handleEdit = (dress: any) => {
     setEditingDress(dress)
     setIsModalOpen(true)
@@ -86,6 +101,29 @@ export default function Dresses() {
     setEditingDress(null)
   }
 
+  const toggleSelection = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const newSelected = new Set(selectedItems)
+    if (newSelected.has(id)) {
+      newSelected.delete(id)
+    } else {
+      newSelected.add(id)
+    }
+    setSelectedItems(newSelected)
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === data?.dresses?.length) {
+      setSelectedItems(new Set())
+    } else {
+      setSelectedItems(new Set(data?.dresses?.map((dress: any) => dress.id) || []))
+    }
+  }
+
+  const clearSelection = () => {
+    setSelectedItems(new Set())
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -93,13 +131,36 @@ export default function Dresses() {
         <h1 className="text-3xl font-heading font-semibold text-text-primary">
           {t('dresses.title')}
         </h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="btn-primary flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          {t('dresses.addDress')}
-        </button>
+        <div className="flex items-center gap-2">
+          {selectedItems.size > 0 && (
+            <>
+              <span className="text-sm text-text-secondary">
+                {selectedItems.size} {t('common.selected', { defaultValue: 'selected' })}
+              </span>
+              <button
+                onClick={clearSelection}
+                className="p-2 rounded-lg hover:bg-surface-hover text-text-secondary"
+                title={t('common.cancel')}
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setIsBulkDeleteOpen(true)}
+                className="btn-primary bg-error hover:bg-error/90 flex items-center gap-2"
+              >
+                <Trash2 className="w-5 h-5" />
+                {t('common.delete')} ({selectedItems.size})
+              </button>
+            </>
+          )}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="btn-primary flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            {t('dresses.addDress')}
+          </button>
+        </div>
       </div>
 
       {/* Filters and Sort */}
@@ -115,7 +176,21 @@ export default function Dresses() {
           />
         </div>
         
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
+          {data?.dresses?.length > 0 && (
+            <button
+              onClick={toggleSelectAll}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-hover text-text-secondary text-sm"
+            >
+              {selectedItems.size === data?.dresses?.length ? (
+                <CheckSquare className="w-4 h-4 text-primary" />
+              ) : (
+                <Square className="w-4 h-4" />
+              )}
+              {t('common.all', { defaultValue: 'All' })}
+            </button>
+          )}
+          
           <select
             value={filters.status}
             onChange={(e) => { setFilters({ ...filters, status: e.target.value }); setCurrentPage(1); }}
@@ -166,8 +241,23 @@ export default function Dresses() {
           {data?.dresses?.map((dress: any) => (
             <div
               key={dress.id}
-              className="bg-surface rounded-xl border border-border overflow-hidden card-hover group"
+              className={cn(
+                "bg-surface rounded-xl border overflow-hidden card-hover group relative",
+                selectedItems.has(dress.id) ? "border-primary ring-2 ring-primary/20" : "border-border"
+              )}
             >
+              {/* Selection Checkbox */}
+              <button
+                onClick={(e) => toggleSelection(dress.id, e)}
+                className="absolute top-3 left-3 z-40 p-1 rounded bg-white/90 shadow-sm hover:bg-white transition-colors"
+              >
+                {selectedItems.has(dress.id) ? (
+                  <CheckSquare className="w-5 h-5 text-primary" />
+                ) : (
+                  <Square className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+
               {/* Image Slideshow */}
               <div className="relative">
                 <ImageSlideshow
@@ -252,6 +342,16 @@ export default function Dresses() {
         title={t('common.confirmDelete')}
         message={`${deletingDress?.name}`}
         loading={deleteMutation.isPending}
+      />
+
+      {/* Bulk Delete Confirmation */}
+      <ConfirmDialog
+        isOpen={isBulkDeleteOpen}
+        onClose={() => setIsBulkDeleteOpen(false)}
+        onConfirm={() => bulkDeleteMutation.mutate(Array.from(selectedItems))}
+        title={t('common.confirmDelete')}
+        message={`${selectedItems.size} ${t('dresses.title', { defaultValue: 'dresses' })}`}
+        loading={bulkDeleteMutation.isPending}
       />
     </div>
   )

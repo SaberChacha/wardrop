@@ -188,7 +188,7 @@ export default function ClothingForm({ item, onSuccess }: ClothingFormProps) {
             onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
             className="input-field"
             min="0"
-            step="0.01"
+            step="any"
             placeholder={t('clothing.purchasePricePlaceholder')}
           />
         </div>
@@ -202,7 +202,7 @@ export default function ClothingForm({ item, onSuccess }: ClothingFormProps) {
             onChange={(e) => setFormData({ ...formData, sale_price: e.target.value })}
             className="input-field"
             min="0"
-            step="0.01"
+            step="any"
             required
           />
         </div>

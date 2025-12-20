@@ -154,7 +154,7 @@ export default function BookingForm({ booking, onSuccess }: BookingFormProps) {
             onChange={(e) => setFormData({ ...formData, rental_price: e.target.value })}
             className="input-field"
             min="0"
-            step="100"
+            step="any"
             required
           />
         </div>
@@ -168,7 +168,7 @@ export default function BookingForm({ booking, onSuccess }: BookingFormProps) {
             onChange={(e) => setFormData({ ...formData, deposit_amount: e.target.value })}
             className="input-field"
             min="0"
-            step="100"
+            step="any"
             required
           />
         </div>

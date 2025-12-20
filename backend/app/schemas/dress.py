@@ -42,6 +42,7 @@ class DressResponse(DressBase):
     id: int
     status: str
     created_at: datetime
+    updated_at: Optional[datetime] = None
     images: List[DressImageResponse] = []
 
     class Config:

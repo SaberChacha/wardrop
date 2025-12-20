@@ -186,7 +186,7 @@ export default function DressForm({ dress, onSuccess }: DressFormProps) {
             onChange={(e) => setFormData({ ...formData, rental_price: e.target.value })}
             className="input-field"
             min="0"
-            step="0.01"
+            step="any"
             required
           />
         </div>
@@ -200,7 +200,7 @@ export default function DressForm({ dress, onSuccess }: DressFormProps) {
             onChange={(e) => setFormData({ ...formData, deposit_amount: e.target.value })}
             className="input-field"
             min="0"
-            step="0.01"
+            step="any"
             required
           />
         </div>

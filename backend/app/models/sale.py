@@ -16,6 +16,7 @@ class Sale(Base):
     sale_date = Column(Date, nullable=False, index=True)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
     client = relationship("Client", back_populates="sales")
