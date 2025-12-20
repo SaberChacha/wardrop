@@ -1,21 +1,19 @@
 """Add updated_at column to all tables
 
-Revision ID: 004_add_updated_at
-Revises: 003_add_purchase_price
+Revision ID: 004
+Revises: 003
 Create Date: 2025-12-20
 
 """
-from typing import Sequence, Union
-
 from alembic import op
 import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '004_add_updated_at'
-down_revision: Union[str, None] = '003_add_purchase_price'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+revision = '004'
+down_revision = '003'
+branch_labels = None
+depends_on = None
 
 
 def upgrade() -> None:
