@@ -23,3 +23,5 @@ class SettingsResponse(SettingsBase):
     class Config:
         from_attributes = True
 
+
+

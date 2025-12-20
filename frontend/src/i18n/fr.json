@@ -237,6 +237,11 @@
     "logo": "Logo de la marque",
     "currentLogo": "Logo actuel",
     "uploadLogo": "Glissez-déposez ou cliquez pour télécharger un logo"
+  },
+  "languages": {
+    "arabic": "Arabe",
+    "french": "Français",
+    "selectLanguage": "Choisir la langue"
   }
 }
 

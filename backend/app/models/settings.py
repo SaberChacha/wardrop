@@ -13,3 +13,5 @@ class Settings(Base):
     currency = Column(String(10), default="DZD")
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
+
+

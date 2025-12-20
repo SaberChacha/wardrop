@@ -82,24 +82,11 @@
   text-align: right;
 }
 
-[dir="rtl"] .sidebar {
-  right: 0;
-  left: auto;
-  transform: translateX(100%);
-}
-
-[dir="rtl"] .sidebar.translate-x-0 {
-  transform: translateX(0);
-}
-
-[dir="rtl"] .sidebar.-translate-x-full {
-  transform: translateX(100%);
-}
-
 /* RTL: Sidebar positioning for desktop */
 @media (min-width: 1024px) {
-  [dir="rtl"] .sidebar {
-    transform: translateX(0);
+  [dir="rtl"] .lg\:pl-64 {
+    padding-left: 0;
+    padding-right: 16rem;
   }
   
   [dir="rtl"] .lg\:ml-64 {

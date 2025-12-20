@@ -60,8 +60,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'fixed top-0 z-50 h-full w-64 bg-surface transform transition-transform duration-300 ease-in-out',
-        isRTL ? 'right-0 border-l border-border' : 'left-0 border-r border-border',
+        'sidebar fixed top-0 z-50 h-full w-64 bg-surface transform transition-transform duration-300 ease-in-out',
+        isRTL ? 'border-l border-border' : 'border-r border-border',
         'lg:translate-x-0',
         isOpen 
           ? 'translate-x-0' 
@@ -69,6 +69,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             ? 'translate-x-full' 
             : '-translate-x-full'
       )}
+      style={{
+        [isRTL ? 'right' : 'left']: 0,
+        [isRTL ? 'left' : 'right']: 'auto',
+      }}
     >
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-6 border-b border-border">

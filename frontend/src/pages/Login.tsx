@@ -1,26 +1,58 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Sparkles, Eye, EyeOff } from 'lucide-react'
+import { Sparkles, Eye, EyeOff, Globe, ChevronDown, Check } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useSettings } from '../contexts/SettingsContext'
+import { cn } from '../lib/utils'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 
+const languages = [
+  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+]
+
 export default function Login() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { login, isAuthenticated } = useAuth()
-  const { settings } = useSettings()
+  const { settings, updateSettings } = useSettings()
   
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
+
+  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0]
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsLangDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const changeLanguage = async (langCode: string) => {
+    i18n.changeLanguage(langCode)
+    setIsLangDropdownOpen(false)
+    try {
+      await updateSettings({ language: langCode })
+    } catch (error) {
+      console.error('Failed to save language preference:', error)
+    }
+  }
 
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -46,7 +78,59 @@ export default function Login() {
   const brandName = settings?.brand_name || 'Wardrop'
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex relative">
+      {/* Language dropdown - top right */}
+      <div className="absolute top-4 ltr:right-4 rtl:left-4 z-50" ref={dropdownRef}>
+        <button
+          onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors bg-white/90 backdrop-blur-sm shadow-sm border border-border",
+            isLangDropdownOpen 
+              ? "bg-primary/10 text-primary" 
+              : "hover:bg-surface-hover text-text-secondary hover:text-text-primary"
+          )}
+        >
+          <Globe className="w-4 h-4" />
+          <span className="text-sm font-medium">
+            {currentLanguage.name}
+          </span>
+          <ChevronDown className={cn(
+            "w-4 h-4 transition-transform duration-200",
+            isLangDropdownOpen && "rotate-180"
+          )} />
+        </button>
+
+        {/* Dropdown menu */}
+        {isLangDropdownOpen && (
+          <div className={cn(
+            "absolute top-full mt-2 w-48 bg-surface rounded-xl shadow-lg border border-border py-1 z-50",
+            "animate-fade-in",
+            i18n.language === 'ar' ? "left-0" : "right-0"
+          )}>
+            {languages.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => changeLanguage(lang.code)}
+                className={cn(
+                  "w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors",
+                  i18n.language === lang.code
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">{lang.flag}</span>
+                  <span>{lang.name}</span>
+                </div>
+                {i18n.language === lang.code && (
+                  <Check className="w-4 h-4 text-primary" />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Left side - Decorative */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary-dark to-primary-light relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
