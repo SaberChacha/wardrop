@@ -6,6 +6,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { bookingsAPI, dressesAPI } from '../services/api'
 import Modal from '../components/ui/Modal'
+import ImageSlideshow from '../components/ui/ImageSlideshow'
 import { formatCurrency, formatDate } from '../lib/utils'
 
 export default function Calendar() {
@@ -123,6 +124,15 @@ export default function Calendar() {
       >
         {selectedBooking && (
           <div className="space-y-4">
+            {/* Dress Images */}
+            <div className="w-full max-w-xs mx-auto rounded-lg overflow-hidden">
+              <ImageSlideshow
+                images={selectedBooking.dress_images || []}
+                alt={selectedBooking.dress_name}
+                aspectRatio="square"
+              />
+            </div>
+            
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-text-muted">{t('bookings.client')}</p>

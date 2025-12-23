@@ -6,7 +6,7 @@ from datetime import date, datetime
 
 from ..database import get_db
 from ..models.booking import Booking
-from ..models.dress import Dress
+from ..models.dress import Dress, DressImage
 from ..schemas.booking import BookingCreate, BookingUpdate, BookingResponse, BookingListResponse, CalendarBooking
 from .auth import get_current_user
 
@@ -77,7 +77,7 @@ async def get_calendar_bookings(
     """Get bookings for calendar view within a date range"""
     query = db.query(Booking).options(
         joinedload(Booking.client),
-        joinedload(Booking.dress)
+        joinedload(Booking.dress).joinedload(Dress.images)
     ).filter(
         and_(
             Booking.start_date <= end,
@@ -108,7 +108,11 @@ async def get_calendar_bookings(
             "color": color,
             "status": booking.booking_status,
             "client_name": booking.client.full_name,
-            "dress_name": booking.dress.name
+            "dress_name": booking.dress.name,
+            "dress_images": [
+                {"id": img.id, "image_path": img.image_path, "is_primary": img.is_primary}
+                for img in booking.dress.images
+            ]
         })
     
     return calendar_events

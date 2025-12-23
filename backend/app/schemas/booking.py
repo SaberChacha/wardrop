@@ -4,7 +4,7 @@ from datetime import datetime, date
 from decimal import Decimal
 
 from .client import ClientResponse
-from .dress import DressResponse
+from .dress import DressResponse, DressImageResponse
 
 
 class BookingBase(BaseModel):
@@ -67,4 +67,5 @@ class CalendarBooking(BaseModel):
     status: str
     client_name: str
     dress_name: str
+    dress_images: List[DressImageResponse] = []
 
