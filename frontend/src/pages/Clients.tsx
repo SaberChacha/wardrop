@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, Edit, Trash2, Phone, MessageCircle } from 'lucide-react'
+import { Plus, Search, Trash2, Phone, MessageCircle } from 'lucide-react'
 import { clientsAPI } from '../services/api'
 import { formatDate } from '../lib/utils'
 import Modal from '../components/ui/Modal'
@@ -18,6 +18,7 @@ export default function Clients() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingClient, setEditingClient] = useState<any>(null)
   const [deletingClient, setDeletingClient] = useState<any>(null)
+  const [selectedClient, setSelectedClient] = useState<any>(null)
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -58,11 +59,6 @@ export default function Clients() {
       setDeletingClient(null)
     },
   })
-
-  const handleEdit = (client: any) => {
-    setEditingClient(client)
-    setIsModalOpen(true)
-  }
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
@@ -124,12 +120,15 @@ export default function Clients() {
                 <th className="px-4 py-3 text-left">{t('clients.phone')}</th>
                 <th className="px-4 py-3 text-left">{t('clients.whatsapp')}</th>
                 <th className="px-4 py-3 text-left hidden md:table-cell">{t('clients.address')}</th>
-                <th className="px-4 py-3 text-right">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {data?.clients?.map((client: any) => (
-                <tr key={client.id} className="table-row">
+                <tr 
+                  key={client.id} 
+                  className="table-row cursor-pointer hover:bg-primary/5"
+                  onDoubleClick={() => setSelectedClient(client)}
+                >
                   <td className="px-4 py-3">
                     <div>
                       <p className="font-medium text-text-primary">{client.full_name}</p>
@@ -140,7 +139,11 @@ export default function Clients() {
                   </td>
                   <td className="px-4 py-3">
                     {client.phone && (
-                      <a href={`tel:${client.phone}`} className="flex items-center gap-1 text-text-secondary hover:text-primary">
+                      <a 
+                        href={`tel:${client.phone}`} 
+                        className="flex items-center gap-1 text-text-secondary hover:text-primary"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Phone className="w-4 h-4" />
                         {client.phone}
                       </a>
@@ -153,6 +156,7 @@ export default function Clients() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-1 text-success hover:text-success/80"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <MessageCircle className="w-4 h-4" />
                         {client.whatsapp}
@@ -161,22 +165,6 @@ export default function Clients() {
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell text-text-secondary">
                     {client.address || '-'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(client)}
-                        className="p-2 rounded-lg text-text-secondary hover:bg-primary/10 hover:text-primary transition-colors"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => setDeletingClient(client)}
-                        className="p-2 rounded-lg text-text-secondary hover:bg-error/10 hover:text-error transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
                   </td>
                 </tr>
               ))}
@@ -216,6 +204,35 @@ export default function Clients() {
         message={`${deletingClient?.full_name}`}
         loading={deleteMutation.isPending}
       />
+
+      {/* Client Detail Modal */}
+      <Modal
+        isOpen={!!selectedClient}
+        onClose={() => setSelectedClient(null)}
+        title={t('clients.editClient')}
+      >
+        <div className="relative">
+          <ClientForm
+            client={selectedClient}
+            onSuccess={() => setSelectedClient(null)}
+          />
+          <div className="mt-4 pt-4 border-t border-border flex justify-between">
+            <button
+              onClick={() => { setDeletingClient(selectedClient); setSelectedClient(null); }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-error text-white hover:bg-error/90 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              {t('common.delete')}
+            </button>
+            <button
+              onClick={() => setSelectedClient(null)}
+              className="btn-secondary"
+            >
+              {t('common.close')}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

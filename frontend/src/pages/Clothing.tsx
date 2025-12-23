@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, Edit, Trash2, AlertTriangle, CheckSquare, Square, XCircle } from 'lucide-react'
+import { Plus, Search, Trash2, AlertTriangle, CheckSquare, Square, XCircle } from 'lucide-react'
 import { clothingAPI } from '../services/api'
 import { formatCurrency, cn } from '../lib/utils'
 import Modal from '../components/ui/Modal'
@@ -19,6 +19,7 @@ export default function Clothing() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [deletingItem, setDeletingItem] = useState<any>(null)
+  const [selectedItem, setSelectedItem] = useState<any>(null)
 
   // Bulk selection state
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set())
@@ -75,11 +76,6 @@ export default function Clothing() {
       setIsBulkDeleteOpen(false)
     },
   })
-
-  const handleEdit = (item: any) => {
-    setEditingItem(item)
-    setIsModalOpen(true)
-  }
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
@@ -206,8 +202,9 @@ export default function Clothing() {
             return (
               <div
                 key={item.id}
+                onDoubleClick={() => setSelectedItem(item)}
                 className={cn(
-                  "bg-surface rounded-xl border overflow-hidden card-hover group relative",
+                  "bg-surface rounded-xl border overflow-hidden card-hover group relative cursor-pointer",
                   selectedItems.has(item.id) ? "border-primary ring-2 ring-primary/20" : "border-border"
                 )}
               >
@@ -245,22 +242,6 @@ export default function Clothing() {
                       <AlertTriangle className="w-5 h-5 text-warning" />
                     </div>
                   )}
-
-                  {/* Actions overlay */}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-20">
-                    <button
-                      onClick={() => handleEdit(item)}
-                      className="p-3 rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors"
-                    >
-                      <Edit className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => setDeletingItem(item)}
-                      className="p-3 rounded-full bg-white text-error hover:bg-error hover:text-white transition-colors"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
                 </div>
 
                 {/* Info */}
@@ -326,6 +307,36 @@ export default function Clothing() {
         message={`${selectedItems.size} ${t('clothing.title', { defaultValue: 'items' })}`}
         loading={bulkDeleteMutation.isPending}
       />
+
+      {/* Item Detail Modal */}
+      <Modal
+        isOpen={!!selectedItem}
+        onClose={() => setSelectedItem(null)}
+        title={t('clothing.editItem')}
+        size="lg"
+      >
+        <div className="relative">
+          <ClothingForm
+            item={selectedItem}
+            onSuccess={() => setSelectedItem(null)}
+          />
+          <div className="mt-4 pt-4 border-t border-border flex justify-between">
+            <button
+              onClick={() => { setDeletingItem(selectedItem); setSelectedItem(null); }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-error text-white hover:bg-error/90 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              {t('common.delete')}
+            </button>
+            <button
+              onClick={() => setSelectedItem(null)}
+              className="btn-secondary"
+            >
+              {t('common.close')}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

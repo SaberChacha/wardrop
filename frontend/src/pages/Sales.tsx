@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Edit, Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { salesAPI } from '../services/api'
 import { formatCurrency, formatDate } from '../lib/utils'
 import Modal from '../components/ui/Modal'
@@ -9,7 +9,6 @@ import SaleForm from '../components/forms/SaleForm'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Pagination from '../components/ui/Pagination'
 import SortDropdown from '../components/ui/SortDropdown'
-import ImageSlideshow from '../components/ui/ImageSlideshow'
 
 export default function Sales() {
   const { t, i18n } = useTranslation()
@@ -63,11 +62,6 @@ export default function Sales() {
       setDeletingSale(null)
     },
   })
-
-  const handleEdit = (sale: any) => {
-    setEditingSale(sale)
-    setIsModalOpen(true)
-  }
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
@@ -149,7 +143,6 @@ export default function Sales() {
                 <th className="px-4 py-3 text-left">{t('sales.unitPrice')}</th>
                 <th className="px-4 py-3 text-left">{t('sales.totalPrice')}</th>
                 <th className="px-4 py-3 text-left">{t('sales.saleDate')}</th>
-                <th className="px-4 py-3 text-right">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -157,7 +150,7 @@ export default function Sales() {
                 <tr 
                   key={sale.id} 
                   className="table-row cursor-pointer hover:bg-primary/5"
-                  onClick={() => setSelectedSale(sale)}
+                  onDoubleClick={() => setSelectedSale(sale)}
                 >
                   <td className="px-4 py-3 font-medium text-text-primary">
                     {sale.client?.full_name}
@@ -176,22 +169,6 @@ export default function Sales() {
                   </td>
                   <td className="px-4 py-3 text-text-secondary">
                     {formatDate(sale.sale_date, i18n.language)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleEdit(sale); }}
-                        className="p-2 rounded-lg text-text-secondary hover:bg-primary/10 hover:text-primary transition-colors"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setDeletingSale(sale); }}
-                        className="p-2 rounded-lg text-text-secondary hover:bg-error/10 hover:text-error transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
                   </td>
                 </tr>
               ))}
@@ -232,6 +209,36 @@ export default function Sales() {
         message={`${deletingSale?.client?.full_name} - ${deletingSale?.clothing?.name}`}
         loading={deleteMutation.isPending}
       />
+
+      {/* Sale Detail Modal */}
+      <Modal
+        isOpen={!!selectedSale}
+        onClose={() => setSelectedSale(null)}
+        title={t('sales.editSale')}
+        size="lg"
+      >
+        <div className="relative">
+          <SaleForm
+            sale={selectedSale}
+            onSuccess={() => setSelectedSale(null)}
+          />
+          <div className="mt-4 pt-4 border-t border-border flex justify-between">
+            <button
+              onClick={() => { setDeletingSale(selectedSale); setSelectedSale(null); }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-error text-white hover:bg-error/90 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              {t('common.delete')}
+            </button>
+            <button
+              onClick={() => setSelectedSale(null)}
+              className="btn-secondary"
+            >
+              {t('common.close')}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Edit, Trash2, Calendar } from 'lucide-react'
+import { Plus, Trash2, Calendar } from 'lucide-react'
 import { bookingsAPI } from '../services/api'
 import { formatCurrency, formatDate, getStatusColor } from '../lib/utils'
 import Modal from '../components/ui/Modal'
@@ -9,7 +9,6 @@ import BookingForm from '../components/forms/BookingForm'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Pagination from '../components/ui/Pagination'
 import SortDropdown from '../components/ui/SortDropdown'
-import ImageSlideshow from '../components/ui/ImageSlideshow'
 
 export default function Bookings() {
   const { t, i18n } = useTranslation()
@@ -65,11 +64,6 @@ export default function Bookings() {
       setDeletingBooking(null)
     },
   })
-
-  const handleEdit = (booking: any) => {
-    setEditingBooking(booking)
-    setIsModalOpen(true)
-  }
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
@@ -174,7 +168,6 @@ export default function Bookings() {
                 <th className="px-4 py-3 text-left">{t('bookings.rentalPrice')}</th>
                 <th className="px-4 py-3 text-left">{t('bookings.depositStatus')}</th>
                 <th className="px-4 py-3 text-left">{t('bookings.bookingStatus')}</th>
-                <th className="px-4 py-3 text-right">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -182,7 +175,7 @@ export default function Bookings() {
                 <tr 
                   key={booking.id} 
                   className="table-row cursor-pointer hover:bg-primary/5"
-                  onClick={() => setSelectedBooking(booking)}
+                  onDoubleClick={() => setSelectedBooking(booking)}
                 >
                   <td className="px-4 py-3 font-medium text-text-primary">
                     {booking.client?.full_name}
@@ -211,22 +204,6 @@ export default function Bookings() {
                     <span className={`badge ${getStatusColor(booking.booking_status)}`}>
                       {t(`bookings.bookingStatuses.${booking.booking_status}`)}
                     </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleEdit(booking); }}
-                        className="p-2 rounded-lg text-text-secondary hover:bg-primary/10 hover:text-primary transition-colors"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setDeletingBooking(booking); }}
-                        className="p-2 rounded-lg text-text-secondary hover:bg-error/10 hover:text-error transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
                   </td>
                 </tr>
               ))}
@@ -268,79 +245,34 @@ export default function Bookings() {
         loading={deleteMutation.isPending}
       />
 
-      {/* Booking Details Modal */}
+      {/* Booking Detail Modal */}
       <Modal
         isOpen={!!selectedBooking}
         onClose={() => setSelectedBooking(null)}
-        title={t('common.details')}
+        title={t('bookings.editBooking')}
+        size="lg"
       >
-        {selectedBooking && (
-          <div className="space-y-4">
-            {/* Dress Images */}
-            <div className="w-full max-w-xs mx-auto rounded-lg overflow-hidden">
-              <ImageSlideshow
-                images={selectedBooking.dress?.images || []}
-                alt={selectedBooking.dress?.name || ''}
-                aspectRatio="square"
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-text-muted">{t('bookings.client')}</p>
-                <p className="font-medium">{selectedBooking.client?.full_name}</p>
-              </div>
-              <div>
-                <p className="text-sm text-text-muted">{t('bookings.dress')}</p>
-                <p className="font-medium">{selectedBooking.dress?.name}</p>
-              </div>
-              <div>
-                <p className="text-sm text-text-muted">{t('bookings.startDate')}</p>
-                <p className="font-medium">{formatDate(selectedBooking.start_date, i18n.language)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-text-muted">{t('bookings.endDate')}</p>
-                <p className="font-medium">{formatDate(selectedBooking.end_date, i18n.language)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-text-muted">{t('bookings.rentalPrice')}</p>
-                <p className="font-medium text-primary">{formatCurrency(selectedBooking.rental_price)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-text-muted">{t('bookings.depositAmount')}</p>
-                <p className="font-medium">{formatCurrency(selectedBooking.deposit_amount)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-text-muted">{t('bookings.depositStatus')}</p>
-                <span className={`badge ${getStatusColor(selectedBooking.deposit_status)}`}>
-                  {t(`bookings.depositStatuses.${selectedBooking.deposit_status}`)}
-                </span>
-              </div>
-              <div>
-                <p className="text-sm text-text-muted">{t('bookings.bookingStatus')}</p>
-                <span className={`badge ${getStatusColor(selectedBooking.booking_status)}`}>
-                  {t(`bookings.bookingStatuses.${selectedBooking.booking_status}`)}
-                </span>
-              </div>
-            </div>
-            
-            {selectedBooking.notes && (
-              <div>
-                <p className="text-sm text-text-muted">{t('common.notes')}</p>
-                <p className="text-text-secondary">{selectedBooking.notes}</p>
-              </div>
-            )}
-            
-            <div className="pt-4 flex justify-end">
-              <button
-                onClick={() => setSelectedBooking(null)}
-                className="btn-secondary"
-              >
-                {t('common.close')}
-              </button>
-            </div>
+        <div className="relative">
+          <BookingForm
+            booking={selectedBooking}
+            onSuccess={() => setSelectedBooking(null)}
+          />
+          <div className="mt-4 pt-4 border-t border-border flex justify-between">
+            <button
+              onClick={() => { setDeletingBooking(selectedBooking); setSelectedBooking(null); }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-error text-white hover:bg-error/90 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              {t('common.delete')}
+            </button>
+            <button
+              onClick={() => setSelectedBooking(null)}
+              className="btn-secondary"
+            >
+              {t('common.close')}
+            </button>
           </div>
-        )}
+        </div>
       </Modal>
     </div>
   )
