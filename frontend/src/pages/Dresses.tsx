@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -147,6 +147,23 @@ export default function Dresses() {
     setSelectedItems(new Set());
   };
 
+  // Mobile double-tap support
+  const lastTapRef = useRef<{ id: number; time: number }>({ id: 0, time: 0 });
+
+  const handleDressTap = useCallback((dress: any, e: React.TouchEvent) => {
+    const now = Date.now();
+    if (
+      lastTapRef.current.id === dress.id &&
+      now - lastTapRef.current.time < 300
+    ) {
+      e.preventDefault();
+      setSelectedDress(dress);
+      lastTapRef.current = { id: 0, time: 0 };
+    } else {
+      lastTapRef.current = { id: dress.id, time: now };
+    }
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -275,6 +292,7 @@ export default function Dresses() {
               <div
                 key={dress.id}
                 onDoubleClick={() => setSelectedDress(dress)}
+                onTouchEnd={(e) => handleDressTap(dress, e)}
                 className={cn(
                   "bg-surface rounded-xl border overflow-hidden card-hover group relative cursor-pointer",
                   selectedItems.has(dress.id)
