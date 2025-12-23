@@ -9,6 +9,7 @@ import SaleForm from '../components/forms/SaleForm'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Pagination from '../components/ui/Pagination'
 import SortDropdown from '../components/ui/SortDropdown'
+import ImageSlideshow from '../components/ui/ImageSlideshow'
 
 export default function Sales() {
   const { t, i18n } = useTranslation()
@@ -17,6 +18,8 @@ export default function Sales() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingSale, setEditingSale] = useState<any>(null)
   const [deletingSale, setDeletingSale] = useState<any>(null)
+  const [selectedSale, setSelectedSale] = useState<any>(null)
+  const [dateFilters, setDateFilters] = useState({ startDate: '', endDate: '' })
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -33,10 +36,12 @@ export default function Sales() {
   ]
 
   const { data, isLoading } = useQuery({
-    queryKey: ['sales', currentPage, pageSize, sortBy, sortOrder],
+    queryKey: ['sales', dateFilters, currentPage, pageSize, sortBy, sortOrder],
     queryFn: () => salesAPI.getAll({
       skip: (currentPage - 1) * pageSize,
       limit: pageSize,
+      start_date: dateFilters.startDate || undefined,
+      end_date: dateFilters.endDate || undefined,
       sort_by: sortBy,
       sort_order: sortOrder,
     }),
@@ -85,8 +90,36 @@ export default function Sales() {
         </button>
       </div>
 
-      {/* Sort */}
-      <div className="flex justify-end">
+      {/* Filters and Sort */}
+      <div className="flex flex-wrap gap-3 items-center">
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={dateFilters.startDate}
+            onChange={(e) => { setDateFilters({ ...dateFilters, startDate: e.target.value }); setCurrentPage(1); }}
+            className="input-field w-auto"
+            placeholder={t('common.from')}
+          />
+          <span className="text-text-muted">-</span>
+          <input
+            type="date"
+            value={dateFilters.endDate}
+            onChange={(e) => { setDateFilters({ ...dateFilters, endDate: e.target.value }); setCurrentPage(1); }}
+            className="input-field w-auto"
+            placeholder={t('common.to')}
+          />
+          {(dateFilters.startDate || dateFilters.endDate) && (
+            <button
+              onClick={() => { setDateFilters({ startDate: '', endDate: '' }); setCurrentPage(1); }}
+              className="text-sm text-text-muted hover:text-error transition-colors"
+            >
+              {t('common.clear')}
+            </button>
+          )}
+        </div>
+
+        <div className="flex-1"></div>
+
         <SortDropdown
           options={sortOptions}
           sortBy={sortBy}
@@ -121,7 +154,11 @@ export default function Sales() {
             </thead>
             <tbody>
               {data?.sales?.map((sale: any) => (
-                <tr key={sale.id} className="table-row">
+                <tr 
+                  key={sale.id} 
+                  className="table-row cursor-pointer hover:bg-primary/5"
+                  onClick={() => setSelectedSale(sale)}
+                >
                   <td className="px-4 py-3 font-medium text-text-primary">
                     {sale.client?.full_name}
                   </td>
@@ -143,13 +180,13 @@ export default function Sales() {
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => handleEdit(sale)}
+                        onClick={(e) => { e.stopPropagation(); handleEdit(sale); }}
                         className="p-2 rounded-lg text-text-secondary hover:bg-primary/10 hover:text-primary transition-colors"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => setDeletingSale(sale)}
+                        onClick={(e) => { e.stopPropagation(); setDeletingSale(sale); }}
                         className="p-2 rounded-lg text-text-secondary hover:bg-error/10 hover:text-error transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />

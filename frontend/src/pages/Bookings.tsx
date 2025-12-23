@@ -9,15 +9,18 @@ import BookingForm from '../components/forms/BookingForm'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Pagination from '../components/ui/Pagination'
 import SortDropdown from '../components/ui/SortDropdown'
+import ImageSlideshow from '../components/ui/ImageSlideshow'
 
 export default function Bookings() {
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   
   const [filters, setFilters] = useState({ status: '', deposit_status: '' })
+  const [dateFilters, setDateFilters] = useState({ startDate: '', endDate: '' })
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingBooking, setEditingBooking] = useState<any>(null)
   const [deletingBooking, setDeletingBooking] = useState<any>(null)
+  const [selectedBooking, setSelectedBooking] = useState<any>(null)
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -34,12 +37,14 @@ export default function Bookings() {
   ]
 
   const { data, isLoading } = useQuery({
-    queryKey: ['bookings', filters, currentPage, pageSize, sortBy, sortOrder],
+    queryKey: ['bookings', filters, dateFilters, currentPage, pageSize, sortBy, sortOrder],
     queryFn: () => bookingsAPI.getAll({
       skip: (currentPage - 1) * pageSize,
       limit: pageSize,
       status: filters.status || undefined,
       deposit_status: filters.deposit_status || undefined,
+      start_date: dateFilters.startDate || undefined,
+      end_date: dateFilters.endDate || undefined,
       sort_by: sortBy,
       sort_order: sortOrder,
     }),
@@ -113,6 +118,32 @@ export default function Bookings() {
           <option value="forfeited">{t('bookings.depositStatuses.forfeited')}</option>
         </select>
 
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={dateFilters.startDate}
+            onChange={(e) => { setDateFilters({ ...dateFilters, startDate: e.target.value }); setCurrentPage(1); }}
+            className="input-field w-auto"
+            placeholder={t('common.from')}
+          />
+          <span className="text-text-muted">-</span>
+          <input
+            type="date"
+            value={dateFilters.endDate}
+            onChange={(e) => { setDateFilters({ ...dateFilters, endDate: e.target.value }); setCurrentPage(1); }}
+            className="input-field w-auto"
+            placeholder={t('common.to')}
+          />
+          {(dateFilters.startDate || dateFilters.endDate) && (
+            <button
+              onClick={() => { setDateFilters({ startDate: '', endDate: '' }); setCurrentPage(1); }}
+              className="text-sm text-text-muted hover:text-error transition-colors"
+            >
+              {t('common.clear')}
+            </button>
+          )}
+        </div>
+
         <SortDropdown
           options={sortOptions}
           sortBy={sortBy}
@@ -148,7 +179,11 @@ export default function Bookings() {
             </thead>
             <tbody>
               {data?.bookings?.map((booking: any) => (
-                <tr key={booking.id} className="table-row">
+                <tr 
+                  key={booking.id} 
+                  className="table-row cursor-pointer hover:bg-primary/5"
+                  onClick={() => setSelectedBooking(booking)}
+                >
                   <td className="px-4 py-3 font-medium text-text-primary">
                     {booking.client?.full_name}
                   </td>
@@ -180,13 +215,13 @@ export default function Bookings() {
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => handleEdit(booking)}
+                        onClick={(e) => { e.stopPropagation(); handleEdit(booking); }}
                         className="p-2 rounded-lg text-text-secondary hover:bg-primary/10 hover:text-primary transition-colors"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => setDeletingBooking(booking)}
+                        onClick={(e) => { e.stopPropagation(); setDeletingBooking(booking); }}
                         className="p-2 rounded-lg text-text-secondary hover:bg-error/10 hover:text-error transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -232,6 +267,81 @@ export default function Bookings() {
         message={`${deletingBooking?.client?.full_name} - ${deletingBooking?.dress?.name}`}
         loading={deleteMutation.isPending}
       />
+
+      {/* Booking Details Modal */}
+      <Modal
+        isOpen={!!selectedBooking}
+        onClose={() => setSelectedBooking(null)}
+        title={t('common.details')}
+      >
+        {selectedBooking && (
+          <div className="space-y-4">
+            {/* Dress Images */}
+            <div className="w-full max-w-xs mx-auto rounded-lg overflow-hidden">
+              <ImageSlideshow
+                images={selectedBooking.dress?.images || []}
+                alt={selectedBooking.dress?.name || ''}
+                aspectRatio="square"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-text-muted">{t('bookings.client')}</p>
+                <p className="font-medium">{selectedBooking.client?.full_name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-text-muted">{t('bookings.dress')}</p>
+                <p className="font-medium">{selectedBooking.dress?.name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-text-muted">{t('bookings.startDate')}</p>
+                <p className="font-medium">{formatDate(selectedBooking.start_date, i18n.language)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-text-muted">{t('bookings.endDate')}</p>
+                <p className="font-medium">{formatDate(selectedBooking.end_date, i18n.language)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-text-muted">{t('bookings.rentalPrice')}</p>
+                <p className="font-medium text-primary">{formatCurrency(selectedBooking.rental_price)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-text-muted">{t('bookings.depositAmount')}</p>
+                <p className="font-medium">{formatCurrency(selectedBooking.deposit_amount)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-text-muted">{t('bookings.depositStatus')}</p>
+                <span className={`badge ${getStatusColor(selectedBooking.deposit_status)}`}>
+                  {t(`bookings.depositStatuses.${selectedBooking.deposit_status}`)}
+                </span>
+              </div>
+              <div>
+                <p className="text-sm text-text-muted">{t('bookings.bookingStatus')}</p>
+                <span className={`badge ${getStatusColor(selectedBooking.booking_status)}`}>
+                  {t(`bookings.bookingStatuses.${selectedBooking.booking_status}`)}
+                </span>
+              </div>
+            </div>
+            
+            {selectedBooking.notes && (
+              <div>
+                <p className="text-sm text-text-muted">{t('common.notes')}</p>
+                <p className="text-text-secondary">{selectedBooking.notes}</p>
+              </div>
+            )}
+            
+            <div className="pt-4 flex justify-end">
+              <button
+                onClick={() => setSelectedBooking(null)}
+                className="btn-secondary"
+              >
+                {t('common.close')}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

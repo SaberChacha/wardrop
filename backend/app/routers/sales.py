@@ -6,7 +6,7 @@ from datetime import date
 
 from ..database import get_db
 from ..models.sale import Sale
-from ..models.clothing import Clothing
+from ..models.clothing import Clothing, ClothingImage
 from ..schemas.sale import SaleCreate, SaleUpdate, SaleResponse, SaleListResponse
 from .auth import get_current_user
 
@@ -29,7 +29,7 @@ async def get_sales(
     """Get all sales with optional filters, sorting, and pagination"""
     query = db.query(Sale).options(
         joinedload(Sale.client),
-        joinedload(Sale.clothing)
+        joinedload(Sale.clothing).joinedload(Clothing.images)
     )
     
     if client_id:

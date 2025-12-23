@@ -31,7 +31,7 @@ async def get_bookings(
     """Get all bookings with optional filters, sorting, and pagination"""
     query = db.query(Booking).options(
         joinedload(Booking.client),
-        joinedload(Booking.dress)
+        joinedload(Booking.dress).joinedload(Dress.images)
     )
     
     if status:
