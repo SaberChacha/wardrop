@@ -1,88 +1,91 @@
-import { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { salesAPI, clientsAPI, clothingAPI } from '../../services/api'
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { salesAPI, clientsAPI, clothingAPI } from "../../services/api";
+import ImageSlideshow from "../ui/ImageSlideshow";
 
 interface SaleFormProps {
-  sale?: any
-  onSuccess: () => void
+  sale?: any;
+  onSuccess: () => void;
 }
 
 export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
-  const { t } = useTranslation()
-  const queryClient = useQueryClient()
-  
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+
   const [formData, setFormData] = useState({
-    client_id: sale?.client_id || '',
-    clothing_id: sale?.clothing_id || '',
+    client_id: sale?.client_id || "",
+    clothing_id: sale?.clothing_id || "",
     quantity: sale?.quantity || 1,
-    unit_price: sale?.unit_price || '',
-    sale_date: sale?.sale_date || new Date().toISOString().split('T')[0],
-    notes: sale?.notes || '',
-  })
+    unit_price: sale?.unit_price || "",
+    sale_date: sale?.sale_date || new Date().toISOString().split("T")[0],
+    notes: sale?.notes || "",
+  });
 
   const { data: clients } = useQuery({
-    queryKey: ['clients-list'],
+    queryKey: ["clients-list"],
     queryFn: () => clientsAPI.getAll({ limit: 100 }),
-  })
+  });
 
   const { data: clothing } = useQuery({
-    queryKey: ['clothing-in-stock'],
+    queryKey: ["clothing-in-stock"],
     queryFn: () => clothingAPI.getAll({ limit: 100, in_stock: true }),
-  })
+  });
 
   // Auto-fill price when item is selected
   useEffect(() => {
     if (formData.clothing_id && !sale) {
       const selectedItem = clothing?.items?.find(
         (c: any) => c.id === parseInt(formData.clothing_id.toString())
-      )
+      );
       if (selectedItem) {
         setFormData((prev) => ({
           ...prev,
           unit_price: selectedItem.sale_price,
-        }))
+        }));
       }
     }
-  }, [formData.clothing_id, clothing, sale])
+  }, [formData.clothing_id, clothing, sale]);
 
   const mutation = useMutation({
     mutationFn: (data: any) =>
       sale ? salesAPI.update(sale.id, data) : salesAPI.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sales'] })
-      queryClient.invalidateQueries({ queryKey: ['clothing'] })
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
-      onSuccess()
+      queryClient.invalidateQueries({ queryKey: ["sales"] });
+      queryClient.invalidateQueries({ queryKey: ["clothing"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      onSuccess();
     },
-  })
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     const submitData = {
       ...formData,
       client_id: parseInt(formData.client_id.toString()),
       clothing_id: parseInt(formData.clothing_id.toString()),
       quantity: parseInt(formData.quantity.toString()),
       unit_price: parseFloat(formData.unit_price.toString()),
-    }
-    mutation.mutate(submitData)
-  }
+    };
+    mutation.mutate(submitData);
+  };
 
   const selectedItem = clothing?.items?.find(
     (c: any) => c.id === parseInt(formData.clothing_id.toString())
-  )
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
-            {t('sales.client')} *
+            {t("sales.client")} *
           </label>
           <select
             value={formData.client_id}
-            onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, client_id: e.target.value })
+            }
             className="select-field"
             required
           >
@@ -96,14 +99,15 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
         </div>
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
-            {t('sales.item')} *
+            {t("sales.item")} *
           </label>
           <select
             value={formData.clothing_id}
-            onChange={(e) => setFormData({ ...formData, clothing_id: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, clothing_id: e.target.value })
+            }
             className="select-field"
             required
-            disabled={!!sale}
           >
             <option value="">Sélectionner un article</option>
             {clothing?.items?.map((item: any) => (
@@ -115,15 +119,29 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
         </div>
       </div>
 
+      {/* Product Image Slideshow */}
+      {selectedItem && (
+        <div className="w-full max-w-xs mx-auto rounded-lg overflow-hidden">
+          <ImageSlideshow
+            images={selectedItem.images || []}
+            alt={selectedItem.name || ""}
+            aspectRatio="square"
+            fallbackEmoji="👔"
+          />
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
-            {t('sales.quantity')} *
+            {t("sales.quantity")} *
           </label>
           <input
             type="number"
             value={formData.quantity}
-            onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, quantity: e.target.value })
+            }
             className="input-field"
             min="1"
             max={selectedItem?.stock_quantity || 999}
@@ -137,12 +155,14 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
         </div>
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
-            {t('sales.unitPrice')} (DZD) *
+            {t("sales.unitPrice")} (DZD) *
           </label>
           <input
             type="number"
             value={formData.unit_price}
-            onChange={(e) => setFormData({ ...formData, unit_price: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, unit_price: e.target.value })
+            }
             className="input-field"
             min="0"
             step="any"
@@ -151,12 +171,14 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
         </div>
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
-            {t('sales.saleDate')} *
+            {t("sales.saleDate")} *
           </label>
           <input
             type="date"
             value={formData.sale_date}
-            onChange={(e) => setFormData({ ...formData, sale_date: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, sale_date: e.target.value })
+            }
             className="input-field"
             required
           />
@@ -167,17 +189,21 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
       {formData.unit_price && formData.quantity && (
         <div className="p-4 rounded-lg bg-secondary/30">
           <p className="text-sm text-text-secondary">
-            {t('sales.totalPrice')}:
+            {t("sales.totalPrice")}:
           </p>
           <p className="text-2xl font-heading font-bold text-primary">
-            {(parseFloat(formData.unit_price.toString()) * parseInt(formData.quantity.toString())).toLocaleString()} DZD
+            {(
+              parseFloat(formData.unit_price.toString()) *
+              parseInt(formData.quantity.toString())
+            ).toLocaleString()}{" "}
+            DZD
           </p>
         </div>
       )}
 
       <div>
         <label className="block text-sm font-medium text-text-primary mb-2">
-          {t('sales.notes')}
+          {t("sales.notes")}
         </label>
         <textarea
           value={formData.notes}
@@ -189,16 +215,20 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
 
       {mutation.isError && (
         <p className="text-error text-sm">
-          {(mutation.error as any)?.response?.data?.detail || 'Une erreur est survenue'}
+          {(mutation.error as any)?.response?.data?.detail ||
+            "Une erreur est survenue"}
         </p>
       )}
 
       <div className="flex justify-end gap-3 pt-4">
-        <button type="submit" disabled={mutation.isPending} className="btn-primary">
-          {mutation.isPending ? t('common.loading') : t('common.save')}
+        <button
+          type="submit"
+          disabled={mutation.isPending}
+          className="btn-primary"
+        >
+          {mutation.isPending ? t("common.loading") : t("common.save")}
         </button>
       </div>
     </form>
-  )
+  );
 }
-
