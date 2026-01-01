@@ -191,6 +191,7 @@
     "loading": "Chargement...",
     "noData": "Aucune donnée",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer?",
+    "confirmBulkDelete": "Êtes-vous sûr de vouloir supprimer {{count}} éléments?",
     "success": "Succès",
     "error": "Erreur",
     "currency": "DZD",
@@ -201,7 +202,12 @@
     "details": "Détails",
     "close": "Fermer",
     "yes": "Oui",
-    "no": "Non"
+    "no": "Non",
+    "selected": "{{count}} sélectionné(s)",
+    "deleteSelected": "Supprimer la sélection",
+    "selectAll": "Tout sélectionner",
+    "noResults": "Aucun résultat trouvé",
+    "typeToSearch": "Tapez pour rechercher..."
   },
   "pagination": {
     "showing": "Affichage {{start}}-{{end}} sur {{total}}",

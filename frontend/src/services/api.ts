@@ -80,6 +80,10 @@ export const clientsAPI = {
     const response = await api.delete(`/clients/${id}`);
     return response.data;
   },
+  bulkDelete: async (ids: number[]) => {
+    const response = await api.post("/clients/bulk-delete", ids);
+    return response.data;
+  },
 };
 
 // Dresses
@@ -213,6 +217,10 @@ export const bookingsAPI = {
     const response = await api.delete(`/bookings/${id}`);
     return response.data;
   },
+  bulkDelete: async (ids: number[]) => {
+    const response = await api.post("/bookings/bulk-delete", ids);
+    return response.data;
+  },
 };
 
 // Sales
@@ -244,6 +252,12 @@ export const salesAPI = {
   },
   delete: async (id: number, restore_stock: boolean = true) => {
     const response = await api.delete(`/sales/${id}`, {
+      params: { restore_stock },
+    });
+    return response.data;
+  },
+  bulkDelete: async (ids: number[], restore_stock: boolean = true) => {
+    const response = await api.post("/sales/bulk-delete", ids, {
       params: { restore_stock },
     });
     return response.data;

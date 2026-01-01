@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Trash2, Phone, MessageCircle } from "lucide-react";
+import { Plus, Search, Trash2, Phone, MessageCircle, CheckSquare, Square, XCircle } from "lucide-react";
 import { clientsAPI } from "../services/api";
 import { formatDate } from "../lib/utils";
 import Modal from "../components/ui/Modal";
@@ -19,6 +19,10 @@ export default function Clients() {
   const [editingClient, setEditingClient] = useState<any>(null);
   const [deletingClient, setDeletingClient] = useState<any>(null);
   const [selectedClient, setSelectedClient] = useState<any>(null);
+
+  // Bulk selection state
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -72,6 +76,38 @@ export default function Clients() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids: number[]) => clientsAPI.bulkDelete(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      setSelectedItems(new Set());
+      setIsBulkDeleteOpen(false);
+    },
+  });
+
+  const toggleSelection = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedItems(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === data?.clients?.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(data?.clients?.map((client: any) => client.id) || []));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedItems(new Set());
+  };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingClient(null);
@@ -101,19 +137,42 @@ export default function Clients() {
         <h1 className="text-3xl font-heading font-semibold text-text-primary">
           {t("clients.title")}
         </h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="btn-primary flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          {t("clients.addClient")}
-        </button>
+        <div className="flex items-center gap-2">
+          {selectedItems.size > 0 && (
+            <>
+              <span className="text-sm text-text-secondary">
+                {t("common.selected", { count: selectedItems.size })}
+              </span>
+              <button
+                onClick={clearSelection}
+                className="p-2 rounded-lg hover:bg-surface-hover text-text-secondary"
+                title={t("common.cancel")}
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setIsBulkDeleteOpen(true)}
+                className="btn-primary bg-error hover:bg-error/90 flex items-center gap-2"
+              >
+                <Trash2 className="w-5 h-5" />
+                {t("common.delete")} ({selectedItems.size})
+              </button>
+            </>
+          )}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="btn-primary flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            {t("clients.addClient")}
+          </button>
+        </div>
       </div>
 
       {/* Search and Sort */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted rtl:left-auto rtl:right-3" />
           <input
             type="text"
             value={search}
@@ -122,15 +181,30 @@ export default function Clients() {
               setCurrentPage(1);
             }}
             placeholder={t("clients.searchPlaceholder")}
-            className="input-field pl-10"
+            className="input-field pl-10 rtl:pl-3 rtl:pr-10"
           />
         </div>
-        <SortDropdown
-          options={sortOptions}
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          onSortChange={handleSortChange}
-        />
+        <div className="flex items-center gap-2">
+          {data?.clients?.length > 0 && (
+            <button
+              onClick={toggleSelectAll}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-surface hover:bg-surface-hover text-text-secondary text-sm transition-colors"
+            >
+              {selectedItems.size === data?.clients?.length ? (
+                <CheckSquare className="w-4 h-4 text-primary" />
+              ) : (
+                <Square className="w-4 h-4" />
+              )}
+              {t("common.selectAll", { defaultValue: "Select All" })}
+            </button>
+          )}
+          <SortDropdown
+            options={sortOptions}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSortChange={handleSortChange}
+          />
+        </div>
       </div>
 
       {/* Table */}
@@ -148,6 +222,18 @@ export default function Clients() {
             <table className="w-full">
               <thead>
                 <tr className="table-header">
+                  <th className="px-4 py-3 w-12">
+                    <button
+                      onClick={toggleSelectAll}
+                      className="p-1 rounded hover:bg-surface-hover"
+                    >
+                      {selectedItems.size === data?.clients?.length ? (
+                        <CheckSquare className="w-5 h-5 text-primary" />
+                      ) : (
+                        <Square className="w-5 h-5 text-text-muted" />
+                      )}
+                    </button>
+                  </th>
                   <th className="px-4 py-3 text-left">
                     {t("clients.fullName")}
                   </th>
@@ -164,10 +250,22 @@ export default function Clients() {
                 {data?.clients?.map((client: any) => (
                   <tr
                     key={client.id}
-                    className="table-row cursor-pointer hover:bg-primary/5"
+                    className={`table-row cursor-pointer hover:bg-primary/5 ${selectedItems.has(client.id) ? 'bg-primary/10' : ''}`}
                     onDoubleClick={() => setSelectedClient(client)}
                     onTouchEnd={(e) => handleClientTap(client, e)}
                   >
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={(e) => toggleSelection(client.id, e)}
+                        className="p-1 rounded hover:bg-surface-hover"
+                      >
+                        {selectedItems.has(client.id) ? (
+                          <CheckSquare className="w-5 h-5 text-primary" />
+                        ) : (
+                          <Square className="w-5 h-5 text-text-muted" />
+                        )}
+                      </button>
+                    </td>
                     <td className="px-4 py-3">
                       <div>
                         <p className="font-medium text-text-primary">
@@ -244,6 +342,16 @@ export default function Clients() {
         title={t("common.confirmDelete")}
         message={`${deletingClient?.full_name}`}
         loading={deleteMutation.isPending}
+      />
+
+      {/* Bulk Delete Confirmation */}
+      <ConfirmDialog
+        isOpen={isBulkDeleteOpen}
+        onClose={() => setIsBulkDeleteOpen(false)}
+        onConfirm={() => bulkDeleteMutation.mutate(Array.from(selectedItems))}
+        title={t("common.confirmDelete")}
+        message={t("common.confirmBulkDelete", { count: selectedItems.size })}
+        loading={bulkDeleteMutation.isPending}
       />
 
       {/* Client Detail Modal */}

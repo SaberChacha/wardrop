@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { salesAPI, clientsAPI, clothingAPI } from "../../services/api";
 import ImageSlideshow from "../ui/ImageSlideshow";
+import Autocomplete from "../ui/Autocomplete";
 
 interface SaleFormProps {
   sale?: any;
@@ -81,41 +82,55 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
           <label className="block text-sm font-medium text-text-primary mb-2">
             {t("sales.client")} *
           </label>
-          <select
-            value={formData.client_id}
-            onChange={(e) =>
-              setFormData({ ...formData, client_id: e.target.value })
+          <Autocomplete
+            options={clients?.clients || []}
+            value={formData.client_id ? parseInt(formData.client_id.toString()) : null}
+            onChange={(value) =>
+              setFormData({ ...formData, client_id: value || "" })
             }
-            className="select-field"
+            displayField="full_name"
+            placeholder={t("common.typeToSearch", { defaultValue: "Type to search..." })}
+            renderOption={(client) => (
+              <div>
+                <span className="font-medium">{client.full_name}</span>
+                {client.phone && (
+                  <span className="text-text-muted text-sm ml-2">
+                    {client.phone}
+                  </span>
+                )}
+              </div>
+            )}
             required
-          >
-            <option value="">Sélectionner un client</option>
-            {clients?.clients?.map((client: any) => (
-              <option key={client.id} value={client.id}>
-                {client.full_name}
-              </option>
-            ))}
-          </select>
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
             {t("sales.item")} *
           </label>
-          <select
-            value={formData.clothing_id}
-            onChange={(e) =>
-              setFormData({ ...formData, clothing_id: e.target.value })
+          <Autocomplete
+            options={clothing?.items || []}
+            value={formData.clothing_id ? parseInt(formData.clothing_id.toString()) : null}
+            onChange={(value) =>
+              setFormData({ ...formData, clothing_id: value || "" })
             }
-            className="select-field"
+            displayField="name"
+            placeholder={t("common.typeToSearch", { defaultValue: "Type to search..." })}
+            renderOption={(item) => (
+              <div className="flex items-center justify-between w-full">
+                <span className="font-medium">{item.name}</span>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full ${
+                    item.stock_quantity > 0
+                      ? "bg-success/10 text-success"
+                      : "bg-error/10 text-error"
+                  }`}
+                >
+                  Stock: {item.stock_quantity}
+                </span>
+              </div>
+            )}
             required
-          >
-            <option value="">Sélectionner un article</option>
-            {clothing?.items?.map((item: any) => (
-              <option key={item.id} value={item.id}>
-                {item.name} (Stock: {item.stock_quantity})
-              </option>
-            ))}
-          </select>
+          />
         </div>
       </div>
 

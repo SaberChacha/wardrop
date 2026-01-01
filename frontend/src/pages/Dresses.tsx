@@ -17,6 +17,7 @@ import ConfirmDialog from "../components/ui/ConfirmDialog";
 import ImageSlideshow from "../components/ui/ImageSlideshow";
 import Pagination from "../components/ui/Pagination";
 import SortDropdown from "../components/ui/SortDropdown";
+import FilterDropdown from "../components/ui/FilterDropdown";
 
 const CATEGORIES = ["wedding", "evening", "engagement", "traditional", "other"];
 const STATUSES = ["available", "rented", "maintenance"];
@@ -204,75 +205,82 @@ export default function Dresses() {
         </div>
       </div>
 
-      {/* Filters and Sort */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-            placeholder={t("common.search")}
-            className="input-field pl-10"
-          />
-        </div>
+      {/* Search, Filters and Sort - Aligned Layout */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          {/* Search Input */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted rtl:left-auto rtl:right-3" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder={t("common.search")}
+              className="input-field pl-10 rtl:pl-3 rtl:pr-10"
+            />
+          </div>
 
-        <div className="flex flex-wrap gap-2 items-center">
-          {data?.dresses?.length > 0 && (
-            <button
-              onClick={toggleSelectAll}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-hover text-text-secondary text-sm"
-            >
-              {selectedItems.size === data?.dresses?.length ? (
-                <CheckSquare className="w-4 h-4 text-primary" />
-              ) : (
-                <Square className="w-4 h-4" />
-              )}
-              {t("common.all", { defaultValue: "All" })}
-            </button>
-          )}
+          {/* Filter Controls - Grouped */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {data?.dresses?.length > 0 && (
+              <button
+                onClick={toggleSelectAll}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-surface hover:bg-surface-hover text-text-secondary text-sm transition-colors"
+              >
+                {selectedItems.size === data?.dresses?.length ? (
+                  <CheckSquare className="w-4 h-4 text-primary" />
+                ) : (
+                  <Square className="w-4 h-4" />
+                )}
+                {t("common.selectAll", { defaultValue: "Select All" })}
+              </button>
+            )}
 
-          <select
-            value={filters.status}
-            onChange={(e) => {
-              setFilters({ ...filters, status: e.target.value });
-              setCurrentPage(1);
-            }}
-            className="select-field w-auto"
-          >
-            <option value="">{t("dresses.status")}</option>
-            {STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {t(`dresses.${status}`)}
-              </option>
-            ))}
-          </select>
+            <FilterDropdown
+              filters={[
+                {
+                  id: "status",
+                  label: t("dresses.status"),
+                  type: "select",
+                  value: filters.status,
+                  options: STATUSES.map((status) => ({
+                    value: status,
+                    label: t(`dresses.${status}`),
+                  })),
+                  placeholder: t("common.all"),
+                },
+                {
+                  id: "category",
+                  label: t("dresses.category"),
+                  type: "select",
+                  value: filters.category,
+                  options: CATEGORIES.map((cat) => ({
+                    value: cat,
+                    label: t(`dresses.categories.${cat}`),
+                  })),
+                  placeholder: t("common.all"),
+                },
+              ]}
+              onFilterChange={(id, value) => {
+                setFilters({ ...filters, [id]: value });
+                setCurrentPage(1);
+              }}
+              onClearAll={() => {
+                setFilters({ status: "", category: "" });
+                setCurrentPage(1);
+              }}
+            />
 
-          <select
-            value={filters.category}
-            onChange={(e) => {
-              setFilters({ ...filters, category: e.target.value });
-              setCurrentPage(1);
-            }}
-            className="select-field w-auto"
-          >
-            <option value="">{t("dresses.category")}</option>
-            {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {t(`dresses.categories.${cat}`)}
-              </option>
-            ))}
-          </select>
-
-          <SortDropdown
-            options={sortOptions}
-            sortBy={sortBy}
-            sortOrder={sortOrder}
-            onSortChange={handleSortChange}
-          />
+            <SortDropdown
+              options={sortOptions}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSortChange={handleSortChange}
+            />
+          </div>
         </div>
       </div>
 

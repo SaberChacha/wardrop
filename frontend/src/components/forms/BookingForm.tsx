@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { bookingsAPI, clientsAPI, dressesAPI } from "../../services/api";
 import ImageSlideshow from "../ui/ImageSlideshow";
+import Autocomplete from "../ui/Autocomplete";
 
 interface BookingFormProps {
   booking?: any;
@@ -85,45 +86,57 @@ export default function BookingForm({ booking, onSuccess }: BookingFormProps) {
           <label className="block text-sm font-medium text-text-primary mb-2">
             {t("bookings.client")} *
           </label>
-          <select
-            value={formData.client_id}
-            onChange={(e) =>
-              setFormData({ ...formData, client_id: e.target.value })
+          <Autocomplete
+            options={clients?.clients || []}
+            value={formData.client_id ? parseInt(formData.client_id.toString()) : null}
+            onChange={(value) =>
+              setFormData({ ...formData, client_id: value || "" })
             }
-            className="select-field"
+            displayField="full_name"
+            placeholder={t("common.typeToSearch", { defaultValue: "Type to search..." })}
+            renderOption={(client) => (
+              <div>
+                <span className="font-medium">{client.full_name}</span>
+                {client.phone && (
+                  <span className="text-text-muted text-sm ml-2">
+                    {client.phone}
+                  </span>
+                )}
+              </div>
+            )}
             required
-          >
-            <option value="">Sélectionner un client</option>
-            {clients?.clients?.map((client: any) => (
-              <option key={client.id} value={client.id}>
-                {client.full_name}
-              </option>
-            ))}
-          </select>
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
             {t("bookings.dress")} *
           </label>
-          <select
-            value={formData.dress_id}
-            onChange={(e) =>
-              setFormData({ ...formData, dress_id: e.target.value })
+          <Autocomplete
+            options={dresses?.dresses || []}
+            value={formData.dress_id ? parseInt(formData.dress_id.toString()) : null}
+            onChange={(value) =>
+              setFormData({ ...formData, dress_id: value || "" })
             }
-            className="select-field"
+            displayField="name"
+            placeholder={t("common.typeToSearch", { defaultValue: "Type to search..." })}
+            renderOption={(dress) => (
+              <div className="flex items-center justify-between w-full">
+                <span className="font-medium">{dress.name}</span>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full ${
+                    dress.status === "available"
+                      ? "bg-success/10 text-success"
+                      : "bg-warning/10 text-warning"
+                  }`}
+                >
+                  {dress.status === "available"
+                    ? t("dresses.available")
+                    : t("dresses.rented")}
+                </span>
+              </div>
+            )}
             required
-          >
-            <option value="">Sélectionner une robe</option>
-            {dresses?.dresses?.map((dress: any) => (
-              <option key={dress.id} value={dress.id}>
-                {dress.name} (
-                {dress.status === "available"
-                  ? t("dresses.available")
-                  : t("dresses.rented")}
-                )
-              </option>
-            ))}
-          </select>
+          />
         </div>
       </div>
 

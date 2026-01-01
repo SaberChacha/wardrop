@@ -191,6 +191,7 @@
     "loading": "جاري التحميل...",
     "noData": "لا توجد بيانات",
     "confirmDelete": "هل أنت متأكد من الحذف؟",
+    "confirmBulkDelete": "هل أنت متأكد من حذف {{count}} عنصر؟",
     "success": "نجاح",
     "error": "خطأ",
     "currency": "د.ج",
@@ -201,7 +202,12 @@
     "details": "تفاصيل",
     "close": "إغلاق",
     "yes": "نعم",
-    "no": "لا"
+    "no": "لا",
+    "selected": "{{count}} محدد",
+    "deleteSelected": "حذف المحدد",
+    "selectAll": "تحديد الكل",
+    "noResults": "لا توجد نتائج",
+    "typeToSearch": "اكتب للبحث..."
   },
   "pagination": {
     "showing": "عرض {{start}}-{{end}} من {{total}}",

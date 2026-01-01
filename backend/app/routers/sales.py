@@ -188,3 +188,25 @@ async def delete_sale(
     db.commit()
     return {"message": "Sale deleted successfully", "stock_restored": restore_stock}
 
+
+@router.post("/bulk-delete")
+async def bulk_delete_sales(
+    ids: List[int],
+    restore_stock: bool = True,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Delete multiple sales by IDs and optionally restore stock"""
+    # First, restore stock for each sale if requested
+    if restore_stock:
+        sales = db.query(Sale).filter(Sale.id.in_(ids)).all()
+        for sale in sales:
+            clothing = db.query(Clothing).filter(Clothing.id == sale.clothing_id).first()
+            if clothing:
+                clothing.stock_quantity += sale.quantity
+    
+    # Now delete the sales
+    deleted_count = db.query(Sale).filter(Sale.id.in_(ids)).delete(synchronize_session=False)
+    db.commit()
+    return {"message": f"{deleted_count} sales deleted successfully", "deleted_count": deleted_count, "stock_restored": restore_stock}
+

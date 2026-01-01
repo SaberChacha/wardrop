@@ -18,12 +18,17 @@ import ConfirmDialog from "../components/ui/ConfirmDialog";
 import ImageSlideshow from "../components/ui/ImageSlideshow";
 import Pagination from "../components/ui/Pagination";
 import SortDropdown from "../components/ui/SortDropdown";
+import FilterDropdown from "../components/ui/FilterDropdown";
+
+const CATEGORIES = ["shirts", "pants", "jackets", "accessories", "other"];
+const STOCK_STATUSES = ["in_stock", "low_stock", "out_of_stock"];
 
 export default function Clothing() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState({ category: "", stock_status: "" });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deletingItem, setDeletingItem] = useState<any>(null);
@@ -190,7 +195,7 @@ export default function Clothing() {
         </div>
       </div>
 
-      {/* Search and Sort */}
+      {/* Search, Filters and Sort */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
@@ -205,7 +210,7 @@ export default function Clothing() {
             className="input-field pl-10"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {data?.items?.length > 0 && (
             <button
               onClick={toggleSelectAll}
@@ -219,6 +224,48 @@ export default function Clothing() {
               {t("common.all", { defaultValue: "All" })}
             </button>
           )}
+
+          <FilterDropdown
+            filters={[
+              {
+                id: "category",
+                label: t("clothing.category", { defaultValue: "Category" }),
+                type: "select",
+                value: filters.category,
+                options: CATEGORIES.map((cat) => ({
+                  value: cat,
+                  label: t(`clothing.categories.${cat}`, { defaultValue: cat }),
+                })),
+                placeholder: t("common.all"),
+              },
+              {
+                id: "stock_status",
+                label: t("clothing.stockStatus", {
+                  defaultValue: "Stock Status",
+                }),
+                type: "select",
+                value: filters.stock_status,
+                options: STOCK_STATUSES.map((status) => ({
+                  value: status,
+                  label: t(`clothing.${status.replace("_", "")}`, {
+                    defaultValue: status
+                      .replace(/_/g, " ")
+                      .replace(/\b\w/g, (l) => l.toUpperCase()),
+                  }),
+                })),
+                placeholder: t("common.all"),
+              },
+            ]}
+            onFilterChange={(id, value) => {
+              setFilters({ ...filters, [id]: value });
+              setCurrentPage(1);
+            }}
+            onClearAll={() => {
+              setFilters({ category: "", stock_status: "" });
+              setCurrentPage(1);
+            }}
+          />
+
           <SortDropdown
             options={sortOptions}
             sortBy={sortBy}
@@ -240,76 +287,105 @@ export default function Clothing() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {data?.items?.map((item: any) => {
-              const stockStatus = getStockStatus(item.stock_quantity);
-              return (
-                <div
-                  key={item.id}
-                  onDoubleClick={() => setSelectedItem(item)}
-                  onTouchEnd={(e) => handleItemTap(item, e)}
-                  className={cn(
-                    "bg-surface rounded-xl border overflow-hidden card-hover group relative cursor-pointer",
-                    selectedItems.has(item.id)
-                      ? "border-primary ring-2 ring-primary/20"
-                      : "border-border"
-                  )}
-                >
-                  {/* Selection Checkbox */}
-                  <button
-                    onClick={(e) => toggleSelection(item.id, e)}
-                    className="absolute top-3 left-3 z-40 p-1 rounded bg-white/90 shadow-sm hover:bg-white transition-colors"
+            {data?.items
+              ?.filter((item: any) => {
+                // Category filter
+                if (filters.category && item.category !== filters.category) {
+                  return false;
+                }
+                // Stock status filter
+                if (filters.stock_status) {
+                  if (
+                    filters.stock_status === "out_of_stock" &&
+                    item.stock_quantity !== 0
+                  ) {
+                    return false;
+                  }
+                  if (
+                    filters.stock_status === "low_stock" &&
+                    (item.stock_quantity === 0 || item.stock_quantity >= 3)
+                  ) {
+                    return false;
+                  }
+                  if (
+                    filters.stock_status === "in_stock" &&
+                    item.stock_quantity < 3
+                  ) {
+                    return false;
+                  }
+                }
+                return true;
+              })
+              .map((item: any) => {
+                const stockStatus = getStockStatus(item.stock_quantity);
+                return (
+                  <div
+                    key={item.id}
+                    onDoubleClick={() => setSelectedItem(item)}
+                    onTouchEnd={(e) => handleItemTap(item, e)}
+                    className={cn(
+                      "bg-surface rounded-xl border overflow-hidden card-hover group relative cursor-pointer",
+                      selectedItems.has(item.id)
+                        ? "border-primary ring-2 ring-primary/20"
+                        : "border-border"
+                    )}
                   >
-                    {selectedItems.has(item.id) ? (
-                      <CheckSquare className="w-5 h-5 text-primary" />
-                    ) : (
-                      <Square className="w-5 h-5 text-gray-400" />
-                    )}
-                  </button>
+                    {/* Selection Checkbox */}
+                    <button
+                      onClick={(e) => toggleSelection(item.id, e)}
+                      className="absolute top-3 left-3 z-40 p-1 rounded bg-white/90 shadow-sm hover:bg-white transition-colors"
+                    >
+                      {selectedItems.has(item.id) ? (
+                        <CheckSquare className="w-5 h-5 text-primary" />
+                      ) : (
+                        <Square className="w-5 h-5 text-gray-400" />
+                      )}
+                    </button>
 
-                  {/* Image Slideshow */}
-                  <div className="relative">
-                    <ImageSlideshow
-                      images={item.images || []}
-                      alt={item.name}
-                      aspectRatio="square"
-                      fallbackEmoji="👔"
-                    />
+                    {/* Image Slideshow */}
+                    <div className="relative">
+                      <ImageSlideshow
+                        images={item.images || []}
+                        alt={item.name}
+                        aspectRatio="square"
+                        fallbackEmoji="👔"
+                      />
 
-                    {/* Stock badge */}
-                    <div className="absolute top-3 right-3 z-10">
-                      <span className={cn("badge", stockStatus.class)}>
-                        {stockStatus.label}
-                      </span>
-                    </div>
-
-                    {/* Low stock warning */}
-                    {item.stock_quantity > 0 && item.stock_quantity < 3 && (
-                      <div className="absolute top-12 left-3 z-10">
-                        <AlertTriangle className="w-5 h-5 text-warning" />
+                      {/* Stock badge */}
+                      <div className="absolute top-3 right-3 z-10">
+                        <span className={cn("badge", stockStatus.class)}>
+                          {stockStatus.label}
+                        </span>
                       </div>
-                    )}
-                  </div>
 
-                  {/* Info */}
-                  <div className="p-4">
-                    <h3 className="font-semibold text-text-primary truncate">
-                      {item.name}
-                    </h3>
-                    <p className="text-sm text-text-secondary">
-                      {item.category} • {item.size} • {item.color}
-                    </p>
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-lg font-semibold text-primary">
-                        {formatCurrency(item.sale_price)}
-                      </span>
-                      <span className="text-sm text-text-muted">
-                        Stock: {item.stock_quantity}
-                      </span>
+                      {/* Low stock warning */}
+                      {item.stock_quantity > 0 && item.stock_quantity < 3 && (
+                        <div className="absolute top-12 left-3 z-10">
+                          <AlertTriangle className="w-5 h-5 text-warning" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="p-4">
+                      <h3 className="font-semibold text-text-primary truncate">
+                        {item.name}
+                      </h3>
+                      <p className="text-sm text-text-secondary">
+                        {item.category} • {item.size} • {item.color}
+                      </p>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-lg font-semibold text-primary">
+                          {formatCurrency(item.sale_price)}
+                        </span>
+                        <span className="text-sm text-text-muted">
+                          Stock: {item.stock_quantity}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
 
           <Pagination

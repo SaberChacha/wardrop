@@ -271,3 +271,15 @@ async def delete_booking(
     db.commit()
     return {"message": "Booking deleted successfully"}
 
+
+@router.post("/bulk-delete")
+async def bulk_delete_bookings(
+    ids: List[int],
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Delete multiple bookings by IDs"""
+    deleted_count = db.query(Booking).filter(Booking.id.in_(ids)).delete(synchronize_session=False)
+    db.commit()
+    return {"message": f"{deleted_count} bookings deleted successfully", "deleted_count": deleted_count}
+

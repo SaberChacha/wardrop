@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Calendar } from "lucide-react";
+import { Plus, Trash2, Calendar, Search, CheckSquare, Square, XCircle } from "lucide-react";
 import { bookingsAPI } from "../services/api";
 import { formatCurrency, formatDate, getStatusColor } from "../lib/utils";
 import Modal from "../components/ui/Modal";
@@ -9,11 +9,16 @@ import BookingForm from "../components/forms/BookingForm";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import Pagination from "../components/ui/Pagination";
 import SortDropdown from "../components/ui/SortDropdown";
+import FilterDropdown from "../components/ui/FilterDropdown";
+
+const BOOKING_STATUSES = ["confirmed", "in_progress", "completed", "cancelled"];
+const DEPOSIT_STATUSES = ["pending", "paid", "returned", "forfeited"];
 
 export default function Bookings() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
 
+  const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ status: "", deposit_status: "" });
   const [dateFilters, setDateFilters] = useState({
     startDate: "",
@@ -23,6 +28,10 @@ export default function Bookings() {
   const [editingBooking, setEditingBooking] = useState<any>(null);
   const [deletingBooking, setDeletingBooking] = useState<any>(null);
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
+
+  // Bulk selection state
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -94,6 +103,46 @@ export default function Bookings() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids: number[]) => bookingsAPI.bulkDelete(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      setSelectedItems(new Set());
+      setIsBulkDeleteOpen(false);
+    },
+  });
+
+  const toggleSelection = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedItems(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    const visibleBookings = data?.bookings?.filter((booking: any) => {
+      if (!search) return true;
+      const searchLower = search.toLowerCase();
+      return (
+        booking.client?.full_name?.toLowerCase().includes(searchLower) ||
+        booking.dress?.name?.toLowerCase().includes(searchLower)
+      );
+    }) || [];
+    if (selectedItems.size === visibleBookings.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(visibleBookings.map((booking: any) => booking.id)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedItems(new Set());
+  };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingBooking(null);
@@ -123,102 +172,121 @@ export default function Bookings() {
         <h1 className="text-3xl font-heading font-semibold text-text-primary">
           {t("bookings.title")}
         </h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="btn-primary flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          {t("bookings.addBooking")}
-        </button>
+        <div className="flex items-center gap-2">
+          {selectedItems.size > 0 && (
+            <>
+              <span className="text-sm text-text-secondary">
+                {t("common.selected", { count: selectedItems.size })}
+              </span>
+              <button
+                onClick={clearSelection}
+                className="p-2 rounded-lg hover:bg-surface-hover text-text-secondary"
+                title={t("common.cancel")}
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setIsBulkDeleteOpen(true)}
+                className="btn-primary bg-error hover:bg-error/90 flex items-center gap-2"
+              >
+                <Trash2 className="w-5 h-5" />
+                {t("common.delete")} ({selectedItems.size})
+              </button>
+            </>
+          )}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="btn-primary flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            {t("bookings.addBooking")}
+          </button>
+        </div>
       </div>
 
-      {/* Filters and Sort */}
-      <div className="flex flex-wrap gap-3">
-        <select
-          value={filters.status}
-          onChange={(e) => {
-            setFilters({ ...filters, status: e.target.value });
-            setCurrentPage(1);
-          }}
-          className="select-field w-auto"
-        >
-          <option value="">{t("bookings.bookingStatus")}</option>
-          <option value="confirmed">
-            {t("bookings.bookingStatuses.confirmed")}
-          </option>
-          <option value="in_progress">
-            {t("bookings.bookingStatuses.in_progress")}
-          </option>
-          <option value="completed">
-            {t("bookings.bookingStatuses.completed")}
-          </option>
-          <option value="cancelled">
-            {t("bookings.bookingStatuses.cancelled")}
-          </option>
-        </select>
-
-        <select
-          value={filters.deposit_status}
-          onChange={(e) => {
-            setFilters({ ...filters, deposit_status: e.target.value });
-            setCurrentPage(1);
-          }}
-          className="select-field w-auto"
-        >
-          <option value="">{t("bookings.depositStatus")}</option>
-          <option value="pending">
-            {t("bookings.depositStatuses.pending")}
-          </option>
-          <option value="paid">{t("bookings.depositStatuses.paid")}</option>
-          <option value="returned">
-            {t("bookings.depositStatuses.returned")}
-          </option>
-          <option value="forfeited">
-            {t("bookings.depositStatuses.forfeited")}
-          </option>
-        </select>
-
-        <div className="flex items-center gap-2">
+      {/* Search, Filters and Sort */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted rtl:left-auto rtl:right-3" />
           <input
-            type="date"
-            value={dateFilters.startDate}
+            type="text"
+            value={search}
             onChange={(e) => {
-              setDateFilters({ ...dateFilters, startDate: e.target.value });
+              setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="input-field w-auto"
-            placeholder={t("common.from")}
+            placeholder={t("bookings.searchPlaceholder", { defaultValue: "Search client or dress..." })}
+            className="input-field pl-10 rtl:pl-3 rtl:pr-10"
           />
-          <span className="text-text-muted">-</span>
-          <input
-            type="date"
-            value={dateFilters.endDate}
-            onChange={(e) => {
-              setDateFilters({ ...dateFilters, endDate: e.target.value });
-              setCurrentPage(1);
-            }}
-            className="input-field w-auto"
-            placeholder={t("common.to")}
-          />
-          {(dateFilters.startDate || dateFilters.endDate) && (
-            <button
-              onClick={() => {
-                setDateFilters({ startDate: "", endDate: "" });
-                setCurrentPage(1);
-              }}
-              className="text-sm text-text-muted hover:text-error transition-colors"
-            >
-              {t("common.clear")}
-            </button>
-          )}
         </div>
 
-        <SortDropdown
-          options={sortOptions}
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          onSortChange={handleSortChange}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          {data?.bookings?.length > 0 && (
+            <button
+              onClick={toggleSelectAll}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-surface hover:bg-surface-hover text-text-secondary text-sm transition-colors"
+            >
+              {selectedItems.size === data?.bookings?.length ? (
+                <CheckSquare className="w-4 h-4 text-primary" />
+              ) : (
+                <Square className="w-4 h-4" />
+              )}
+              {t("common.selectAll", { defaultValue: "Select All" })}
+            </button>
+          )}
+          <FilterDropdown
+            filters={[
+              {
+                id: "status",
+                label: t("bookings.bookingStatus"),
+                type: "select",
+                value: filters.status,
+                options: BOOKING_STATUSES.map((status) => ({
+                  value: status,
+                  label: t(`bookings.bookingStatuses.${status}`),
+                })),
+                placeholder: t("common.all"),
+              },
+              {
+                id: "deposit_status",
+                label: t("bookings.depositStatus"),
+                type: "select",
+                value: filters.deposit_status,
+                options: DEPOSIT_STATUSES.map((status) => ({
+                  value: status,
+                  label: t(`bookings.depositStatuses.${status}`),
+                })),
+                placeholder: t("common.all"),
+              },
+              {
+                id: "dateRange",
+                label: t("bookings.dateRange", { defaultValue: "Date Range" }),
+                type: "dateRange",
+                value: { start: dateFilters.startDate, end: dateFilters.endDate },
+              },
+            ]}
+            onFilterChange={(id, value) => {
+              if (id === "dateRange") {
+                setDateFilters({ startDate: value.start, endDate: value.end });
+              } else {
+                setFilters({ ...filters, [id]: value });
+              }
+              setCurrentPage(1);
+            }}
+            onClearAll={() => {
+              setFilters({ status: "", deposit_status: "" });
+              setDateFilters({ startDate: "", endDate: "" });
+              setCurrentPage(1);
+            }}
+          />
+
+          <SortDropdown
+            options={sortOptions}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSortChange={handleSortChange}
+          />
+        </div>
       </div>
 
       {/* Table */}
@@ -236,6 +304,18 @@ export default function Bookings() {
             <table className="w-full">
               <thead>
                 <tr className="table-header">
+                  <th className="px-4 py-3 w-12">
+                    <button
+                      onClick={toggleSelectAll}
+                      className="p-1 rounded hover:bg-surface-hover"
+                    >
+                      {selectedItems.size === data?.bookings?.length ? (
+                        <CheckSquare className="w-5 h-5 text-primary" />
+                      ) : (
+                        <Square className="w-5 h-5 text-text-muted" />
+                      )}
+                    </button>
+                  </th>
                   <th className="px-4 py-3 text-left">
                     {t("bookings.client")}
                   </th>
@@ -258,13 +338,34 @@ export default function Bookings() {
                 </tr>
               </thead>
               <tbody>
-                {data?.bookings?.map((booking: any) => (
+                {data?.bookings
+                  ?.filter((booking: any) => {
+                    if (!search) return true;
+                    const searchLower = search.toLowerCase();
+                    return (
+                      booking.client?.full_name?.toLowerCase().includes(searchLower) ||
+                      booking.dress?.name?.toLowerCase().includes(searchLower)
+                    );
+                  })
+                  .map((booking: any) => (
                   <tr
                     key={booking.id}
-                    className="table-row cursor-pointer hover:bg-primary/5"
+                    className={`table-row cursor-pointer hover:bg-primary/5 ${selectedItems.has(booking.id) ? 'bg-primary/10' : ''}`}
                     onDoubleClick={() => setSelectedBooking(booking)}
                     onTouchEnd={(e) => handleBookingTap(booking, e)}
                   >
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={(e) => toggleSelection(booking.id, e)}
+                        className="p-1 rounded hover:bg-surface-hover"
+                      >
+                        {selectedItems.has(booking.id) ? (
+                          <CheckSquare className="w-5 h-5 text-primary" />
+                        ) : (
+                          <Square className="w-5 h-5 text-text-muted" />
+                        )}
+                      </button>
+                    </td>
                     <td className="px-4 py-3 font-medium text-text-primary">
                       {booking.client?.full_name}
                     </td>
@@ -342,6 +443,16 @@ export default function Bookings() {
         title={t("common.confirmDelete")}
         message={`${deletingBooking?.client?.full_name} - ${deletingBooking?.dress?.name}`}
         loading={deleteMutation.isPending}
+      />
+
+      {/* Bulk Delete Confirmation */}
+      <ConfirmDialog
+        isOpen={isBulkDeleteOpen}
+        onClose={() => setIsBulkDeleteOpen(false)}
+        onConfirm={() => bulkDeleteMutation.mutate(Array.from(selectedItems))}
+        title={t("common.confirmDelete")}
+        message={t("common.confirmBulkDelete", { count: selectedItems.size })}
+        loading={bulkDeleteMutation.isPending}
       />
 
       {/* Booking Detail Modal */}

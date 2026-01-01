@@ -111,3 +111,15 @@ async def delete_client(
     db.commit()
     return {"message": "Client deleted successfully"}
 
+
+@router.post("/bulk-delete")
+async def bulk_delete_clients(
+    ids: List[int],
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Delete multiple clients by IDs"""
+    deleted_count = db.query(Client).filter(Client.id.in_(ids)).delete(synchronize_session=False)
+    db.commit()
+    return {"message": f"{deleted_count} clients deleted successfully", "deleted_count": deleted_count}
+
