@@ -191,7 +191,7 @@ async def delete_sale(
 
 @router.post("/bulk-delete")
 async def bulk_delete_sales(
-    ids: List[int],
+    ids: list[int],
     restore_stock: bool = True,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)

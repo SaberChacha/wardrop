@@ -274,7 +274,7 @@ async def delete_booking(
 
 @router.post("/bulk-delete")
 async def bulk_delete_bookings(
-    ids: List[int],
+    ids: list[int],
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
