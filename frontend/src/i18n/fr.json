@@ -40,7 +40,8 @@
     "salesProfit": "Bénéfice des ventes",
     "pendingDeposits": "Dépôts en attente",
     "lowStock": "Stock Faible",
-    "upcomingReturns": "Retours à venir"
+    "upcomingReturns": "Retours à venir",
+    "alerts": "Alertes"
   },
   "clients": {
     "title": "Clients",

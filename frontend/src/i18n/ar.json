@@ -40,7 +40,8 @@
     "salesProfit": "أرباح المبيعات",
     "pendingDeposits": "الضمانات المعلقة",
     "lowStock": "مخزون منخفض",
-    "upcomingReturns": "الإرجاعات القادمة"
+    "upcomingReturns": "الإرجاعات القادمة",
+    "alerts": "التنبيهات"
   },
   "clients": {
     "title": "العملاء",
