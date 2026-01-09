@@ -192,6 +192,7 @@
     "totalRentals": "Total locations",
     "totalSales": "Total ventes",
     "totalProfit": "Bénéfice total",
+    "profit": "Bénéfice",
     "exportReport": "Exporter le rapport"
   },
   "export": {

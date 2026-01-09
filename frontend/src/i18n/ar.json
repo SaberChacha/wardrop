@@ -192,6 +192,7 @@
     "totalRentals": "إجمالي التأجير",
     "totalSales": "إجمالي المبيعات",
     "totalProfit": "إجمالي الأرباح",
+    "profit": "الربح",
     "exportReport": "تصدير التقرير"
   },
   "export": {
