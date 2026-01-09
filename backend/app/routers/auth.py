@@ -7,8 +7,8 @@ from passlib.context import CryptContext
 
 from ..database import get_db
 from ..config import get_settings
-from ..models.admin import Admin
-from ..schemas.auth import Token, TokenData, AdminCreate, AdminResponse, LoginRequest
+from ..models.admin import Admin, UserRole
+from ..schemas.auth import Token, TokenData, AdminCreate, AdminResponse, LoginRequest, PasswordChange
 
 router = APIRouter()
 settings = get_settings()
@@ -50,7 +50,7 @@ async def get_current_user(
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
-        token_data = TokenData(email=email)
+        token_data = TokenData(email=email, role=payload.get("role"))
     except JWTError:
         raise credentials_exception
     
@@ -58,6 +58,16 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+async def get_admin_user(current_user: Admin = Depends(get_current_user)) -> Admin:
+    """Dependency that ensures the current user is an admin"""
+    if current_user.role != UserRole.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only administrators can perform this action"
+        )
+    return current_user
 
 
 @router.post("/login", response_model=Token)
@@ -76,7 +86,8 @@ async def login(
     
     access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
+        data={"sub": user.email, "role": user.role.value}, 
+        expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -99,12 +110,13 @@ async def register(admin: AdminCreate, db: Session = Depends(get_db)):
             detail="Email already registered"
         )
     
-    # Create new admin
+    # Create new admin - first user is always admin
     hashed_password = get_password_hash(admin.password)
     db_admin = Admin(
         email=admin.email,
         password_hash=hashed_password,
-        name=admin.name
+        name=admin.name,
+        role=UserRole.admin  # First user is always admin
     )
     db.add(db_admin)
     db.commit()
@@ -130,4 +142,24 @@ async def update_admin(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+@router.put("/password")
+async def change_password(
+    password_data: PasswordChange,
+    current_user: Admin = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Change current user's password"""
+    # Verify current password
+    if not verify_password(password_data.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+    
+    # Update password
+    current_user.password_hash = get_password_hash(password_data.new_password)
+    db.commit()
+    return {"message": "Password changed successfully"}
 

@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -11,12 +10,12 @@ import {
   BarChart3,
   Calendar,
   Settings,
+  UserCog,
+  User,
   X,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
-import { useSettings } from '../../contexts/SettingsContext'
-
-// No API_URL needed for uploads - they're served at /uploads/ directly
+import { useAuth } from '../../hooks/useAuth'
 
 interface SidebarProps {
   isOpen: boolean
@@ -24,27 +23,10 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const { t, i18n } = useTranslation()
-  const { settings } = useSettings()
-  
-  // Check both i18n language and document direction for RTL
-  const getIsRTL = () => i18n.language === 'ar' || document.documentElement.dir === 'rtl'
-  const [isRTL, setIsRTL] = useState(getIsRTL())
+  const { t } = useTranslation()
+  const { isAdmin } = useAuth()
 
-  useEffect(() => {
-    const handleLanguageChange = (lang: string) => {
-      setIsRTL(lang === 'ar')
-    }
-    
-    // Also update when settings language changes
-    setIsRTL(getIsRTL())
-    
-    i18n.on('languageChanged', handleLanguageChange)
-    return () => {
-      i18n.off('languageChanged', handleLanguageChange)
-    }
-  }, [i18n, settings?.language])
-
+  // Navigation items available to all authenticated users
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: t('nav.dashboard') },
     { path: '/clients', icon: Users, label: t('nav.clients') },
@@ -53,44 +35,35 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { path: '/bookings', icon: CalendarDays, label: t('nav.bookings') },
     { path: '/sales', icon: Receipt, label: t('nav.sales') },
     { path: '/calendar', icon: Calendar, label: t('nav.calendar') },
+  ]
+
+  // Admin-only navigation items
+  const adminNavItems = [
     { path: '/reports', icon: BarChart3, label: t('nav.reports') },
+    { path: '/users', icon: UserCog, label: t('nav.users') },
     { path: '/settings', icon: Settings, label: t('nav.settings') },
   ]
+
+  // Profile link for all users
+  const profileItem = { path: '/profile', icon: User, label: t('nav.profile') }
 
   return (
     <aside
       className={cn(
-        'sidebar fixed top-0 z-50 h-full w-64 bg-surface transform transition-transform duration-300 ease-in-out',
-        isRTL ? 'border-l border-border' : 'border-r border-border',
+        'fixed top-0 left-0 z-50 h-full w-64 bg-surface border-r border-border transform transition-transform duration-300 ease-in-out',
         'lg:translate-x-0',
-        isOpen 
-          ? 'translate-x-0' 
-          : isRTL 
-            ? 'translate-x-full' 
-            : '-translate-x-full'
+        isOpen ? 'translate-x-0' : '-translate-x-full'
       )}
-      style={{
-        [isRTL ? 'right' : 'left']: 0,
-        [isRTL ? 'left' : 'right']: 'auto',
-      }}
     >
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-6 border-b border-border">
         <div className="flex items-center gap-3">
-          {settings?.logo_path ? (
-            <img 
-              src={settings.logo_path} 
-              alt={settings.brand_name || 'Logo'}
-              className="w-10 h-10 rounded-xl object-contain"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-          )}
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-white" />
+          </div>
           <div>
             <h1 className="text-xl font-heading font-semibold text-primary">
-              {settings?.brand_name || t('app.name')}
+              {t('app.name')}
             </h1>
           </div>
         </div>
@@ -104,7 +77,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="p-4 space-y-1">
+      <nav className="p-4 space-y-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 180px)' }}>
         {navItems.map((item) => (
           <NavLink
             key={item.path}
@@ -123,6 +96,57 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <span>{item.label}</span>
           </NavLink>
         ))}
+
+        {/* Admin-only section */}
+        {isAdmin && (
+          <>
+            <div className="pt-4 pb-2">
+              <p className="px-4 text-xs font-medium text-text-muted uppercase tracking-wider">
+                {t('nav.administration')}
+              </p>
+            </div>
+            {adminNavItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={onClose}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
+                    isActive
+                      ? 'bg-primary text-white shadow-md shadow-primary/20'
+                      : 'text-text-secondary hover:bg-surface-hover hover:text-primary'
+                  )
+                }
+              >
+                <item.icon className="w-5 h-5" />
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </>
+        )}
+
+        {/* Profile section for all users */}
+        <div className="pt-4 pb-2">
+          <p className="px-4 text-xs font-medium text-text-muted uppercase tracking-wider">
+            {t('nav.account')}
+          </p>
+        </div>
+        <NavLink
+          to={profileItem.path}
+          onClick={onClose}
+          className={({ isActive }) =>
+            cn(
+              'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
+              isActive
+                ? 'bg-primary text-white shadow-md shadow-primary/20'
+                : 'text-text-secondary hover:bg-surface-hover hover:text-primary'
+            )
+          }
+        >
+          <profileItem.icon className="w-5 h-5" />
+          <span>{profileItem.label}</span>
+        </NavLink>
       </nav>
 
       {/* Footer decoration */}

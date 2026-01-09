@@ -17,6 +17,8 @@ import Sales from './pages/Sales'
 import Calendar from './pages/Calendar'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
+import Users from './pages/Users'
+import Profile from './pages/Profile'
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -32,6 +34,25 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
+  }
+
+  return <>{children}</>
+}
+
+// Admin-only Route wrapper
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { isAdmin, isLoading } = useAuth()
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+      </div>
+    )
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />
   }
 
   return <>{children}</>
@@ -80,8 +101,11 @@ function App() {
                 <Route path="/bookings" element={<Bookings />} />
                 <Route path="/sales" element={<Sales />} />
                 <Route path="/calendar" element={<Calendar />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/settings" element={<Settings />} />
+                <Route path="/profile" element={<Profile />} />
+                {/* Admin-only routes */}
+                <Route path="/reports" element={<AdminRoute><Reports /></AdminRoute>} />
+                <Route path="/settings" element={<AdminRoute><Settings /></AdminRoute>} />
+                <Route path="/users" element={<AdminRoute><Users /></AdminRoute>} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Layout>

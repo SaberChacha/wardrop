@@ -7,7 +7,7 @@ import os
 
 from .config import get_settings
 from .database import engine, Base
-from .routers import auth, clients, dresses, clothing, bookings, sales, reports, export, notifications
+from .routers import auth, clients, dresses, clothing, bookings, sales, reports, export, notifications, users
 from .routers import settings as settings_router
 from .services.scheduler import start_scheduler, stop_scheduler
 
@@ -73,6 +73,7 @@ app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads"
 
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(clients.router, prefix="/api/clients", tags=["Clients"])
 app.include_router(dresses.router, prefix="/api/dresses", tags=["Dresses"])
 app.include_router(clothing.router, prefix="/api/clothing", tags=["Clothing"])

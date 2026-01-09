@@ -12,7 +12,11 @@
     "sales": "Ventes",
     "calendar": "Calendrier",
     "reports": "Rapports",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "users": "Utilisateurs",
+    "profile": "Mon Profil",
+    "administration": "Administration",
+    "account": "Compte"
   },
   "auth": {
     "login": "Connexion",
@@ -32,11 +36,9 @@
     "monthlyRevenue": "Revenu Mensuel",
     "rentalRevenue": "Location",
     "salesRevenue": "Ventes",
-    "salesProfit": "Bénéfice",
     "pendingDeposits": "Dépôts en attente",
     "lowStock": "Stock Faible",
-    "upcomingReturns": "Retours à venir",
-    "alerts": "Alertes"
+    "upcomingReturns": "Retours à venir"
   },
   "clients": {
     "title": "Clients",
@@ -73,13 +75,7 @@
       "evening": "Soirée",
       "engagement": "Fiançailles",
       "traditional": "Traditionnel",
-      "other": "Autre",
-      "Robe Kabyle": "Robe Kabyle",
-      "Robe de Mariée": "Robe de Mariée",
-      "Robe de Fiançailles": "Robe de Fiançailles",
-      "Robe de Soirée": "Robe de Soirée",
-      "Caftan": "Caftan",
-      "Karakou": "Karakou"
+      "other": "Autre"
     }
   },
   "clothing": {
@@ -90,8 +86,6 @@
     "category": "Catégorie",
     "size": "Taille",
     "color": "Couleur",
-    "purchasePrice": "Prix d'achat",
-    "purchasePricePlaceholder": "Coût d'achat",
     "salePrice": "Prix de vente",
     "stockQuantity": "Quantité en stock",
     "description": "Description",
@@ -158,9 +152,6 @@
     "totalRevenue": "Revenu total",
     "totalRentals": "Total locations",
     "totalSales": "Total ventes",
-    "totalProfit": "Bénéfice total",
-    "profit": "Bénéfice",
-    "revenueBreakdown": "Répartition des revenus",
     "exportReport": "Exporter le rapport"
   },
   "export": {
@@ -174,10 +165,7 @@
     "exportCommercialReport": "Rapport commercial",
     "importClients": "Importer des clients",
     "importDresses": "Importer des robes",
-    "importClothing": "Importer des vêtements",
-    "importSuccess": "Import réussi",
-    "importFailed": "Échec de l'import",
-    "importDescription": "Importez des données depuis un fichier Excel (.xlsx). Téléchargez d'abord un modèle via l'export pour voir le format attendu."
+    "importClothing": "Importer des vêtements"
   },
   "common": {
     "save": "Enregistrer",
@@ -191,7 +179,6 @@
     "loading": "Chargement...",
     "noData": "Aucune donnée",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer?",
-    "confirmBulkDelete": "Êtes-vous sûr de vouloir supprimer {{count}} éléments?",
     "success": "Succès",
     "error": "Erreur",
     "currency": "DZD",
@@ -202,30 +189,7 @@
     "details": "Détails",
     "close": "Fermer",
     "yes": "Oui",
-    "no": "Non",
-    "selected": "{{count}} sélectionné(s)",
-    "deleteSelected": "Supprimer la sélection",
-    "selectAll": "Tout sélectionner",
-    "noResults": "Aucun résultat trouvé",
-    "typeToSearch": "Tapez pour rechercher..."
-  },
-  "pagination": {
-    "showing": "Affichage {{start}}-{{end}} sur {{total}}",
-    "perPage": "Par page:",
-    "first": "Première page",
-    "previous": "Page précédente",
-    "next": "Page suivante",
-    "last": "Dernière page"
-  },
-  "sort": {
-    "dateAdded": "Date d'ajout",
-    "name": "Nom",
-    "price": "Prix",
-    "startDate": "Date de début",
-    "saleDate": "Date de vente",
-    "total": "Total",
-    "ascending": "Croissant",
-    "descending": "Décroissant"
+    "no": "Non"
   },
   "notifications": {
     "sendSMS": "Envoyer SMS",
@@ -234,20 +198,42 @@
     "reminderSent": "Rappel envoyé",
     "messageSent": "Message envoyé avec succès"
   },
-  "settings": {
-    "subtitle": "Configurer les paramètres de l'application",
-    "general": "Paramètres généraux",
-    "brandName": "Nom de la marque",
-    "language": "Langue",
-    "currency": "Devise",
-    "logo": "Logo de la marque",
-    "currentLogo": "Logo actuel",
-    "uploadLogo": "Glissez-déposez ou cliquez pour télécharger un logo"
+  "users": {
+    "title": "Gestion des Utilisateurs",
+    "subtitle": "Gérer les comptes utilisateurs et leurs permissions",
+    "addUser": "Ajouter un utilisateur",
+    "editUser": "Modifier l'utilisateur",
+    "deleteUser": "Supprimer l'utilisateur",
+    "deleteUserConfirm": "Êtes-vous sûr de vouloir supprimer {{name}}?",
+    "name": "Nom",
+    "email": "Email",
+    "password": "Mot de passe",
+    "passwordRequired": "Le mot de passe est requis",
+    "role": "Rôle",
+    "createdAt": "Date de création",
+    "noUsers": "Aucun utilisateur trouvé",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "resetPasswordFor": "Réinitialiser le mot de passe pour {{name}}",
+    "newPassword": "Nouveau mot de passe",
+    "roles": {
+      "admin": "Administrateur",
+      "staff": "Personnel"
+    }
   },
-  "languages": {
-    "arabic": "Arabe",
-    "french": "Français",
-    "selectLanguage": "Choisir la langue"
+  "profile": {
+    "title": "Mon Profil",
+    "subtitle": "Gérer vos informations personnelles et votre mot de passe",
+    "accountInfo": "Informations du compte",
+    "email": "Email",
+    "role": "Rôle",
+    "changePassword": "Changer le mot de passe",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "updatePassword": "Mettre à jour le mot de passe",
+    "passwordChanged": "Mot de passe mis à jour avec succès",
+    "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères"
   }
 }
 

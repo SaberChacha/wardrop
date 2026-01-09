@@ -17,7 +17,7 @@ from ..schemas.reports import (
     TopClientsReport,
     MonthlyEarnings
 )
-from .auth import get_current_user
+from .auth import get_current_user, get_admin_user
 
 router = APIRouter()
 
@@ -106,7 +106,7 @@ async def get_earnings_report(
     end_date: Optional[date] = None,
     period: str = Query("monthly", regex="^(daily|weekly|monthly|yearly)$"),
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_admin_user)
 ):
     """Get earnings report with breakdown by period"""
     if not end_date:
@@ -189,7 +189,7 @@ async def get_top_dresses(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_admin_user)
 ):
     """Get top rented dresses"""
     if not end_date:
@@ -231,7 +231,7 @@ async def get_top_clients(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_admin_user)
 ):
     """Get top clients by spending"""
     if not end_date:

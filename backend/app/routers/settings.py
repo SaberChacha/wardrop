@@ -7,7 +7,7 @@ from ..database import get_db
 from ..config import get_settings
 from ..models.settings import Settings
 from ..schemas.settings import SettingsUpdate, SettingsResponse
-from .auth import get_current_user
+from .auth import get_current_user, get_admin_user
 
 router = APIRouter()
 config = get_settings()
@@ -31,9 +31,9 @@ def get_or_create_settings(db: Session) -> Settings:
 @router.get("/", response_model=SettingsResponse)
 async def get_app_settings(
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_admin_user)
 ):
-    """Get application settings"""
+    """Get application settings (admin only)"""
     return get_or_create_settings(db)
 
 
@@ -49,9 +49,9 @@ async def get_public_settings(
 async def update_settings(
     settings_update: SettingsUpdate,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_admin_user)
 ):
-    """Update application settings"""
+    """Update application settings (admin only)"""
     settings = get_or_create_settings(db)
     
     update_data = settings_update.model_dump(exclude_unset=True)
@@ -67,9 +67,9 @@ async def update_settings(
 async def upload_logo(
     logo: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_admin_user)
 ):
-    """Upload brand logo"""
+    """Upload brand logo (admin only)"""
     settings = get_or_create_settings(db)
     
     # Validate file extension
@@ -108,9 +108,9 @@ async def upload_logo(
 @router.delete("/logo", response_model=SettingsResponse)
 async def delete_logo(
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_admin_user)
 ):
-    """Delete brand logo"""
+    """Delete brand logo (admin only)"""
     settings = get_or_create_settings(db)
     
     if settings.logo_path:
