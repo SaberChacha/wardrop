@@ -126,6 +126,7 @@
       "available": "Disponible",
       "rented": "Loué",
       "maintenance": "En maintenance",
+      "low_stock": "Stock faible",
       "sold_out": "Rupture de stock"
     }
   },
@@ -144,6 +145,7 @@
     "bookingStatus": "Statut de réservation",
     "notes": "Notes",
     "noBookings": "Aucune réservation trouvée",
+    "searchPlaceholder": "Rechercher client ou produit...",
     "depositStatuses": {
       "pending": "En attente",
       "paid": "Payé",
@@ -168,7 +170,8 @@
     "totalPrice": "Prix total",
     "saleDate": "Date de vente",
     "notes": "Notes",
-    "noSales": "Aucune vente trouvée"
+    "noSales": "Aucune vente trouvée",
+    "searchPlaceholder": "Rechercher client ou produit..."
   },
   "calendar": {
     "title": "Calendrier",
@@ -188,6 +191,7 @@
     "totalRevenue": "Revenu total",
     "totalRentals": "Total locations",
     "totalSales": "Total ventes",
+    "totalProfit": "Bénéfice total",
     "exportReport": "Exporter le rapport"
   },
   "export": {
@@ -211,6 +215,7 @@
     "add": "Ajouter",
     "search": "Rechercher",
     "filter": "Filtrer",
+    "filters": "Filtres",
     "actions": "Actions",
     "loading": "Chargement...",
     "noData": "Aucune donnée",
@@ -225,7 +230,21 @@
     "details": "Détails",
     "close": "Fermer",
     "yes": "Oui",
-    "no": "Non"
+    "no": "Non",
+    "selectAll": "Tout sélectionner",
+    "selected": "sélectionné",
+    "clearAll": "Tout effacer",
+    "apply": "Appliquer"
+  },
+  "sort": {
+    "dateAdded": "Date d'ajout",
+    "startDate": "Date de début",
+    "saleDate": "Date de vente",
+    "price": "Prix",
+    "total": "Total",
+    "name": "Nom",
+    "ascending": "Croissant",
+    "descending": "Décroissant"
   },
   "notifications": {
     "sendSMS": "Envoyer SMS",

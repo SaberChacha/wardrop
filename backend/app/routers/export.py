@@ -100,12 +100,13 @@ async def export_sales(
 async def export_commercial_report(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
+    lang: str = Query(default="fr", description="Language for report (ar, fr)"),
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     """Export comprehensive commercial report"""
     excel_service = ExcelService(db)
-    output = excel_service.export_commercial_report(start_date, end_date)
+    output = excel_service.export_commercial_report(start_date, end_date, lang)
     
     return StreamingResponse(
         io.BytesIO(output),

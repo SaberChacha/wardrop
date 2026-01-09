@@ -453,6 +453,7 @@ export const exportAPI = {
   exportCommercialReport: async (params?: {
     start_date?: string;
     end_date?: string;
+    lang?: string;
   }) => {
     const response = await api.get("/export/commercial-report", {
       responseType: "blob",

@@ -19,7 +19,9 @@ import ImageSlideshow from "../components/ui/ImageSlideshow";
 import Pagination from "../components/ui/Pagination";
 import SortDropdown from "../components/ui/SortDropdown";
 
-const STATUSES = ["available", "rented", "maintenance", "sold_out"];
+// Statuses differ based on product type
+const RENT_STATUSES = ["available", "rented", "maintenance"];
+const SALE_STATUSES = ["available", "low_stock", "sold_out"];
 
 export default function Products() {
   const { t } = useTranslation();
@@ -277,7 +279,7 @@ export default function Products() {
               className="select-field text-sm"
             >
               <option value="">{t("common.all")} - {t("products.status")}</option>
-              {STATUSES.map((status) => (
+              {(typeFilter === "rent" ? RENT_STATUSES : typeFilter === "sale" ? SALE_STATUSES : [...RENT_STATUSES, ...SALE_STATUSES.filter(s => !RENT_STATUSES.includes(s))]).map((status) => (
                 <option key={status} value={status}>
                   {t(`products.statuses.${status}`)}
                 </option>
@@ -331,16 +333,6 @@ export default function Products() {
                   )}
                 </button>
 
-                {/* Type Badge */}
-                <div className="absolute top-3 right-12 z-10">
-                  <span className={cn(
-                    "badge",
-                    product.type === "rent" ? "bg-info/10 text-info" : "bg-success/10 text-success"
-                  )}>
-                    {product.type === "rent" ? t("products.typeRent") : t("products.typeSale")}
-                  </span>
-                </div>
-
                 {/* Image Slideshow */}
                 <div className="relative">
                   <ImageSlideshow
@@ -350,10 +342,20 @@ export default function Products() {
                     fallbackEmoji="📦"
                   />
 
-                  {/* Status badge */}
+                  {/* Status badge - top right */}
                   <div className="absolute top-3 right-3 z-10">
                     <span className={`badge ${getStatusColor(product.status)}`}>
                       {t(`products.statuses.${product.status}`)}
+                    </span>
+                  </div>
+
+                  {/* Type Badge - bottom left */}
+                  <div className="absolute bottom-3 left-3 z-10 rtl:left-auto rtl:right-3">
+                    <span className={cn(
+                      "badge",
+                      product.type === "rent" ? "bg-info/10 text-info" : "bg-success/10 text-success"
+                    )}>
+                      {product.type === "rent" ? t("products.typeRent") : t("products.typeSale")}
                     </span>
                   </div>
                 </div>

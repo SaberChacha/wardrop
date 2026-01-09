@@ -126,6 +126,7 @@
       "available": "متاح",
       "rented": "مؤجر",
       "maintenance": "صيانة",
+      "low_stock": "مخزون منخفض",
       "sold_out": "نفذ المخزون"
     }
   },
@@ -144,6 +145,7 @@
     "bookingStatus": "حالة الحجز",
     "notes": "ملاحظات",
     "noBookings": "لا توجد حجوزات",
+    "searchPlaceholder": "البحث بالعميل أو المنتج...",
     "depositStatuses": {
       "pending": "معلق",
       "paid": "مدفوع",
@@ -168,7 +170,8 @@
     "totalPrice": "السعر الإجمالي",
     "saleDate": "تاريخ البيع",
     "notes": "ملاحظات",
-    "noSales": "لا توجد مبيعات"
+    "noSales": "لا توجد مبيعات",
+    "searchPlaceholder": "البحث بالعميل أو المنتج..."
   },
   "calendar": {
     "title": "التقويم",
@@ -188,6 +191,7 @@
     "totalRevenue": "إجمالي الإيرادات",
     "totalRentals": "إجمالي التأجير",
     "totalSales": "إجمالي المبيعات",
+    "totalProfit": "إجمالي الأرباح",
     "exportReport": "تصدير التقرير"
   },
   "export": {
@@ -211,6 +215,7 @@
     "add": "إضافة",
     "search": "بحث",
     "filter": "تصفية",
+    "filters": "التصفية",
     "actions": "إجراءات",
     "loading": "جاري التحميل...",
     "noData": "لا توجد بيانات",
@@ -225,7 +230,21 @@
     "details": "تفاصيل",
     "close": "إغلاق",
     "yes": "نعم",
-    "no": "لا"
+    "no": "لا",
+    "selectAll": "تحديد الكل",
+    "selected": "محدد",
+    "clearAll": "مسح الكل",
+    "apply": "تطبيق"
+  },
+  "sort": {
+    "dateAdded": "تاريخ الإضافة",
+    "startDate": "تاريخ البداية",
+    "saleDate": "تاريخ البيع",
+    "price": "السعر",
+    "total": "المجموع",
+    "name": "الاسم",
+    "ascending": "تصاعدي",
+    "descending": "تنازلي"
   },
   "notifications": {
     "sendSMS": "إرسال رسالة نصية",

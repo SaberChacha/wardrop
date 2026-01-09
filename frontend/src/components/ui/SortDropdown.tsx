@@ -43,7 +43,7 @@ export default function SortDropdown({
         <select
           value={sortBy}
           onChange={(e) => handleSortByChange(e.target.value)}
-          className="select-field w-auto py-2 pl-8 pr-4 text-sm appearance-none"
+          className="select-field w-auto py-2 pl-8 pr-4 rtl:pl-4 rtl:pr-8 text-sm appearance-none"
         >
           {options.map((option) => (
             <option key={option.value} value={option.value}>
@@ -51,7 +51,7 @@ export default function SortDropdown({
             </option>
           ))}
         </select>
-        <ArrowUpDown className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+        <ArrowUpDown className="absolute left-2.5 rtl:left-auto rtl:right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
       </div>
 
       {/* Sort Order Toggle */}

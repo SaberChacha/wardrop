@@ -11,6 +11,62 @@ from ..models.clothing import Clothing
 from ..models.booking import Booking
 from ..models.sale import Sale
 
+# Translation dictionaries for Excel exports
+TRANSLATIONS = {
+    "ar": {
+        "summary": "ملخص",
+        "commercial_report": "التقرير التجاري",
+        "period": "الفترة",
+        "metric": "المقياس",
+        "value": "القيمة",
+        "total_rental_revenue": "إجمالي إيرادات التأجير (د.ج)",
+        "total_sales_revenue": "إجمالي إيرادات المبيعات (د.ج)",
+        "total_revenue": "إجمالي الإيرادات (د.ج)",
+        "number_of_bookings": "عدد الحجوزات",
+        "number_of_sales": "عدد المبيعات",
+        "bookings": "الحجوزات",
+        "sales": "المبيعات",
+        "client": "العميل",
+        "dress": "الفستان",
+        "item": "المنتج",
+        "start_date": "تاريخ البداية",
+        "end_date": "تاريخ النهاية",
+        "price": "السعر (د.ج)",
+        "deposit": "الضمان (د.ج)",
+        "status": "الحالة",
+        "quantity": "الكمية",
+        "unit_price": "سعر الوحدة (د.ج)",
+        "total": "الإجمالي (د.ج)",
+        "date": "التاريخ",
+    },
+    "fr": {
+        "summary": "Résumé",
+        "commercial_report": "Rapport Commercial",
+        "period": "Période",
+        "metric": "Métrique",
+        "value": "Valeur",
+        "total_rental_revenue": "Total Revenus Location (DZD)",
+        "total_sales_revenue": "Total Revenus Ventes (DZD)",
+        "total_revenue": "Total Revenus (DZD)",
+        "number_of_bookings": "Nombre de Réservations",
+        "number_of_sales": "Nombre de Ventes",
+        "bookings": "Réservations",
+        "sales": "Ventes",
+        "client": "Client",
+        "dress": "Robe",
+        "item": "Article",
+        "start_date": "Date de Début",
+        "end_date": "Date de Fin",
+        "price": "Prix (DZD)",
+        "deposit": "Dépôt (DZD)",
+        "status": "Statut",
+        "quantity": "Quantité",
+        "unit_price": "Prix Unitaire (DZD)",
+        "total": "Total (DZD)",
+        "date": "Date",
+    }
+}
+
 
 class ExcelService:
     def __init__(self, db: Session):
@@ -205,12 +261,15 @@ class ExcelService:
         wb.save(output)
         return output.getvalue()
 
-    def export_commercial_report(self, start_date: Optional[date] = None, end_date: Optional[date] = None) -> bytes:
+    def export_commercial_report(self, start_date: Optional[date] = None, end_date: Optional[date] = None, lang: str = "fr") -> bytes:
         wb = Workbook()
+        
+        # Get translations for the selected language
+        t = TRANSLATIONS.get(lang, TRANSLATIONS["fr"])
         
         # Summary Sheet
         ws_summary = wb.active
-        ws_summary.title = "Summary"
+        ws_summary.title = t["summary"]
         
         if not end_date:
             end_date = date.today()
@@ -242,22 +301,22 @@ class ExcelService:
             Sale.sale_date <= end_date
         ).count()
         
-        ws_summary.append(["Commercial Report"])
-        ws_summary.append([f"Period: {start_date} to {end_date}"])
+        ws_summary.append([t["commercial_report"]])
+        ws_summary.append([f"{t['period']}: {start_date} - {end_date}"])
         ws_summary.append([])
-        ws_summary.append(["Metric", "Value"])
+        ws_summary.append([t["metric"], t["value"]])
         self._style_header(ws_summary, 4)
-        ws_summary.append(["Total Rental Revenue (DZD)", float(rental_total)])
-        ws_summary.append(["Total Sales Revenue (DZD)", float(sales_total)])
-        ws_summary.append(["Total Revenue (DZD)", float(rental_total + sales_total)])
-        ws_summary.append(["Number of Bookings", booking_count])
-        ws_summary.append(["Number of Sales", sales_count])
+        ws_summary.append([t["total_rental_revenue"], float(rental_total)])
+        ws_summary.append([t["total_sales_revenue"], float(sales_total)])
+        ws_summary.append([t["total_revenue"], float(rental_total + sales_total)])
+        ws_summary.append([t["number_of_bookings"], booking_count])
+        ws_summary.append([t["number_of_sales"], sales_count])
         
         self._auto_width(ws_summary)
         
         # Bookings Sheet
-        ws_bookings = wb.create_sheet("Bookings")
-        headers = ["Client", "Dress", "Start Date", "End Date", "Price (DZD)", "Deposit (DZD)", "Status"]
+        ws_bookings = wb.create_sheet(t["bookings"])
+        headers = [t["client"], t["dress"], t["start_date"], t["end_date"], t["price"], t["deposit"], t["status"]]
         ws_bookings.append(headers)
         self._style_header(ws_bookings)
         
@@ -280,8 +339,8 @@ class ExcelService:
         self._auto_width(ws_bookings)
         
         # Sales Sheet
-        ws_sales = wb.create_sheet("Sales")
-        headers = ["Client", "Item", "Quantity", "Unit Price (DZD)", "Total (DZD)", "Date"]
+        ws_sales = wb.create_sheet(t["sales"])
+        headers = [t["client"], t["item"], t["quantity"], t["unit_price"], t["total"], t["date"]]
         ws_sales.append(headers)
         self._style_header(ws_sales)
         

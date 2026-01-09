@@ -21,7 +21,7 @@ import { formatCurrency, downloadFile } from '../lib/utils'
 const COLORS = ['#B76E79', '#D4AF37', '#6366F1', '#10B981', '#F59E0B']
 
 export default function Reports() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [period, setPeriod] = useState('monthly')
   const [dateRange, setDateRange] = useState({
     start: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
@@ -86,7 +86,11 @@ export default function Reports() {
           filename = 'sales.xlsx'
           break
         case 'commercial':
-          blob = await exportAPI.exportCommercialReport({ start_date: dateRange.start, end_date: dateRange.end })
+          blob = await exportAPI.exportCommercialReport({ 
+            start_date: dateRange.start, 
+            end_date: dateRange.end,
+            lang: i18n.language 
+          })
           filename = `commercial_report_${new Date().toISOString().split('T')[0]}.xlsx`
           break
         default:
