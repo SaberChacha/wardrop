@@ -198,7 +198,7 @@ export default function Clothing() {
       {/* Search, Filters and Sort */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+          <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
           <input
             type="text"
             value={search}
@@ -207,7 +207,7 @@ export default function Clothing() {
               setCurrentPage(1);
             }}
             placeholder={t("common.search")}
-            className="input-field pl-10"
+            className="input-field pl-10 rtl:pl-3 rtl:pr-10"
           />
         </div>
         <div className="flex flex-wrap items-center gap-2">

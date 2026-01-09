@@ -237,63 +237,61 @@ export default function Products() {
       </div>
 
       {/* Search, Filters and Sort */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          {/* Search Input */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted rtl:left-auto rtl:right-3" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setCurrentPage(1);
-              }}
-              placeholder={t("common.search")}
-              className="input-field pl-10 rtl:pl-3 rtl:pr-10"
-            />
-          </div>
-
-          {/* Filter Controls */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {data?.products?.length > 0 && (
-              <button
-                onClick={toggleSelectAll}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-surface hover:bg-surface-hover text-text-secondary text-sm transition-colors"
-              >
-                {selectedItems.size === data?.products?.length ? (
-                  <CheckSquare className="w-4 h-4 text-primary" />
-                ) : (
-                  <Square className="w-4 h-4" />
-                )}
-                {t("common.selectAll", { defaultValue: "Select All" })}
-              </button>
-            )}
-
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="select-field text-sm"
-            >
-              <option value="">{t("common.all")} - {t("products.status")}</option>
-              {(typeFilter === "rent" ? RENT_STATUSES : typeFilter === "sale" ? SALE_STATUSES : [...RENT_STATUSES, ...SALE_STATUSES.filter(s => !RENT_STATUSES.includes(s))]).map((status) => (
-                <option key={status} value={status}>
-                  {t(`products.statuses.${status}`)}
-                </option>
-              ))}
-            </select>
-
-            <SortDropdown
-              options={sortOptions}
-              sortBy={sortBy}
-              sortOrder={sortOrder}
-              onSortChange={handleSortChange}
-            />
-          </div>
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Search Input */}
+        <div className="relative flex-1 min-w-[200px] max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted rtl:left-auto rtl:right-3" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
+            placeholder={t("common.search")}
+            className="input-field pl-10 rtl:pl-3 rtl:pr-10"
+          />
         </div>
+
+        {/* Status Filter */}
+        <select
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="select-field text-sm"
+        >
+          <option value="">{t("common.all")} - {t("products.status")}</option>
+          {(typeFilter === "rent" ? RENT_STATUSES : typeFilter === "sale" ? SALE_STATUSES : [...RENT_STATUSES, ...SALE_STATUSES.filter(s => !RENT_STATUSES.includes(s))]).map((status) => (
+            <option key={status} value={status}>
+              {t(`products.statuses.${status}`)}
+            </option>
+          ))}
+        </select>
+
+        {/* Sort Dropdown */}
+        <SortDropdown
+          options={sortOptions}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={handleSortChange}
+        />
+
+        {/* Select All Button */}
+        {data?.products?.length > 0 && (
+          <button
+            onClick={toggleSelectAll}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-surface hover:bg-surface-hover text-text-secondary text-sm transition-colors"
+          >
+            {selectedItems.size === data?.products?.length ? (
+              <CheckSquare className="w-4 h-4 text-primary" />
+            ) : (
+              <Square className="w-4 h-4" />
+            )}
+            {t("common.selectAll")}
+          </button>
+        )}
       </div>
 
       {/* Grid */}

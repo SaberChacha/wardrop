@@ -323,7 +323,7 @@ export default function Reports() {
                 <div className="flex-1">
                   <p className="font-medium text-text-primary">{client.client_name}</p>
                   <p className="text-sm text-text-muted">
-                    {client.booking_count} réservations • {client.sale_count} achats
+                    {client.booking_count} {t('reports.bookingsCount')} • {client.sale_count} {t('reports.purchasesCount')}
                   </p>
                 </div>
                 <span className="font-semibold text-accent">

@@ -193,7 +193,9 @@
     "totalSales": "إجمالي المبيعات",
     "totalProfit": "إجمالي الأرباح",
     "profit": "الربح",
-    "exportReport": "تصدير التقرير"
+    "exportReport": "تصدير التقرير",
+    "bookingsCount": "حجوزات",
+    "purchasesCount": "مشتريات"
   },
   "export": {
     "export": "تصدير",
@@ -206,7 +208,8 @@
     "exportCommercialReport": "التقرير التجاري",
     "importClients": "استيراد العملاء",
     "importDresses": "استيراد الفساتين",
-    "importClothing": "استيراد الملابس"
+    "importClothing": "استيراد الملابس",
+    "importDescription": "استيراد البيانات من ملف Excel (.xlsx). قم بتحميل نموذج عبر التصدير أولاً لمعرفة التنسيق المطلوب."
   },
   "common": {
     "save": "حفظ",
@@ -290,6 +293,16 @@
     "passwordChanged": "تم تغيير كلمة المرور بنجاح",
     "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
     "passwordTooShort": "يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "إدارة إعدادات التطبيق",
+    "logo": "الشعار",
+    "uploadLogo": "رفع الشعار",
+    "general": "الإعدادات العامة",
+    "brandName": "اسم العلامة التجارية",
+    "language": "اللغة",
+    "currency": "العملة"
   }
 }
 

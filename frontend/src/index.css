@@ -134,9 +134,11 @@
 
 /* Input styles */
 .input-field {
-  @apply w-full px-4 py-2.5 rounded-lg border border-border bg-surface;
+  @apply w-full py-2.5 rounded-lg border border-border bg-surface;
   @apply focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary;
   @apply transition-all placeholder:text-text-muted;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 /* Select styles */

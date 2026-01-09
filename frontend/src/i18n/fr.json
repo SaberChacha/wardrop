@@ -193,7 +193,9 @@
     "totalSales": "Total ventes",
     "totalProfit": "Bénéfice total",
     "profit": "Bénéfice",
-    "exportReport": "Exporter le rapport"
+    "exportReport": "Exporter le rapport",
+    "bookingsCount": "réservations",
+    "purchasesCount": "achats"
   },
   "export": {
     "export": "Exporter",
@@ -206,7 +208,8 @@
     "exportCommercialReport": "Rapport commercial",
     "importClients": "Importer des clients",
     "importDresses": "Importer des robes",
-    "importClothing": "Importer des vêtements"
+    "importClothing": "Importer des vêtements",
+    "importDescription": "Importez des données depuis un fichier Excel (.xlsx). Téléchargez d'abord un modèle via l'export pour voir le format attendu."
   },
   "common": {
     "save": "Enregistrer",
@@ -290,6 +293,16 @@
     "passwordChanged": "Mot de passe mis à jour avec succès",
     "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
     "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Gérer les paramètres de l'application",
+    "logo": "Logo",
+    "uploadLogo": "Télécharger le logo",
+    "general": "Paramètres généraux",
+    "brandName": "Nom de la marque",
+    "language": "Langue",
+    "currency": "Devise"
   }
 }
 

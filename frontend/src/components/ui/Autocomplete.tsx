@@ -203,7 +203,7 @@ export default function Autocomplete({
           {/* Search Input */}
           <div className="p-2 border-b border-border">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+              <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input
                 ref={inputRef}
                 type="text"
@@ -211,7 +211,7 @@ export default function Autocomplete({
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder={t("common.typeToSearch", { defaultValue: "Type to search..." })}
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-border bg-surface-hover/50 focus:outline-none focus:border-primary"
+                className="w-full pl-9 pr-3 rtl:pl-3 rtl:pr-9 py-2 text-sm rounded-lg border border-border bg-surface-hover/50 focus:outline-none focus:border-primary"
                 autoFocus
               />
             </div>
