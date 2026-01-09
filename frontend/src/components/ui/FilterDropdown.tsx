@@ -142,7 +142,7 @@ export default function FilterDropdown({
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute top-full mt-2 right-0 z-50 w-72 sm:w-80 bg-surface border border-border rounded-xl shadow-lg overflow-hidden">
+        <div className="absolute top-full mt-2 right-0 rtl:right-auto rtl:left-0 z-50 w-72 sm:w-80 bg-surface border border-border rounded-xl shadow-lg overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface-hover/50">
             <h3 className="font-medium text-text-primary">

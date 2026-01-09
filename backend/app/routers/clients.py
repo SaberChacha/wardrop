@@ -14,7 +14,7 @@ router = APIRouter()
 @router.get("/", response_model=ClientListResponse)
 async def get_clients(
     skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=100),
+    limit: int = Query(50, ge=1, le=500),
     search: Optional[str] = None,
     sort_by: Optional[str] = Query("created_at", description="Field to sort by: full_name, created_at"),
     sort_order: Optional[Literal["asc", "desc"]] = Query("desc", description="Sort order"),

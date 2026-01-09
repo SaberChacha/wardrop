@@ -237,7 +237,7 @@ export default function Products() {
       </div>
 
       {/* Search, Filters and Sort */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         {/* Search Input */}
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted rtl:left-auto rtl:right-3" />
@@ -260,7 +260,7 @@ export default function Products() {
             setStatusFilter(e.target.value);
             setCurrentPage(1);
           }}
-          className="select-field text-sm"
+          className="select-field !w-auto text-sm"
         >
           <option value="">{t("common.all")} - {t("products.status")}</option>
           {(typeFilter === "rent" ? RENT_STATUSES : typeFilter === "sale" ? SALE_STATUSES : [...RENT_STATUSES, ...SALE_STATUSES.filter(s => !RENT_STATUSES.includes(s))]).map((status) => (

@@ -146,6 +146,7 @@
     "notes": "ملاحظات",
     "noBookings": "لا توجد حجوزات",
     "searchPlaceholder": "البحث بالعميل أو المنتج...",
+    "dateRange": "نطاق التاريخ",
     "depositStatuses": {
       "pending": "معلق",
       "paid": "مدفوع",
@@ -171,7 +172,8 @@
     "saleDate": "تاريخ البيع",
     "notes": "ملاحظات",
     "noSales": "لا توجد مبيعات",
-    "searchPlaceholder": "البحث بالعميل أو المنتج..."
+    "searchPlaceholder": "البحث بالعميل أو المنتج...",
+    "dateRange": "نطاق التاريخ"
   },
   "calendar": {
     "title": "التقويم",
@@ -238,7 +240,9 @@
     "selectAll": "تحديد الكل",
     "selected": "محدد",
     "clearAll": "مسح الكل",
-    "apply": "تطبيق"
+    "apply": "تطبيق",
+    "typeToSearch": "اكتب للبحث...",
+    "noResults": "لا توجد نتائج"
   },
   "sort": {
     "dateAdded": "تاريخ الإضافة",

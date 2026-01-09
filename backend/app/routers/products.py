@@ -25,7 +25,7 @@ settings = get_settings()
 @router.get("/", response_model=dict)
 async def get_products(
     skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=100),
+    limit: int = Query(50, ge=1, le=500),
     type: Optional[ProductTypeEnum] = Query(None, description="Filter by product type: rent or sale"),
     search: Optional[str] = None,
     status: Optional[str] = None,

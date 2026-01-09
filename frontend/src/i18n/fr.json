@@ -146,6 +146,7 @@
     "notes": "Notes",
     "noBookings": "Aucune réservation trouvée",
     "searchPlaceholder": "Rechercher client ou produit...",
+    "dateRange": "Plage de dates",
     "depositStatuses": {
       "pending": "En attente",
       "paid": "Payé",
@@ -171,7 +172,8 @@
     "saleDate": "Date de vente",
     "notes": "Notes",
     "noSales": "Aucune vente trouvée",
-    "searchPlaceholder": "Rechercher client ou produit..."
+    "searchPlaceholder": "Rechercher client ou produit...",
+    "dateRange": "Plage de dates"
   },
   "calendar": {
     "title": "Calendrier",
@@ -238,7 +240,9 @@
     "selectAll": "Tout sélectionner",
     "selected": "sélectionné",
     "clearAll": "Tout effacer",
-    "apply": "Appliquer"
+    "apply": "Appliquer",
+    "typeToSearch": "Tapez pour rechercher...",
+    "noResults": "Aucun résultat"
   },
   "sort": {
     "dateAdded": "Date d'ajout",
