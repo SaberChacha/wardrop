@@ -177,6 +177,22 @@
   @apply transition-all appearance-none cursor-pointer;
 }
 
+/* Override padding for selects with icons */
+.select-field.pl-8,
+.select-field[class*="pl-8"] {
+  padding-left: 2rem !important;
+}
+
+.select-field.pr-8,
+.select-field[class*="pr-8"] {
+  padding-right: 2rem !important;
+}
+
+[dir="rtl"] .select-field.rtl\:pr-8 {
+  padding-right: 2rem !important;
+  padding-left: 1rem !important;
+}
+
 /* Table styles */
 .table-container {
   @apply overflow-x-auto rounded-xl border border-border;
