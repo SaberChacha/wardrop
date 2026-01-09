@@ -386,9 +386,6 @@ export default function Users() {
         onConfirm={handleDelete}
         title={t('users.deleteUser')}
         message={t('users.deleteUserConfirm', { name: selectedUser?.name })}
-        confirmText={t('common.delete')}
-        cancelText={t('common.cancel')}
-        variant="danger"
       />
     </div>
   )
