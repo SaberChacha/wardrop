@@ -176,6 +176,82 @@ export const dressesAPI = {
   },
 };
 
+// Products (unified)
+export const productsAPI = {
+  getAll: async (params?: {
+    skip?: number;
+    limit?: number;
+    search?: string;
+    type?: "rent" | "sale";
+    status?: string;
+    category_id?: number;
+    size_id?: number;
+    sort_by?: string;
+    sort_order?: "asc" | "desc";
+  }) => {
+    const response = await api.get("/products", { params });
+    return response.data;
+  },
+  getById: async (id: number) => {
+    const response = await api.get(`/products/${id}`);
+    return response.data;
+  },
+  create: async (formData: FormData) => {
+    const response = await api.post("/products", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+  update: async (id: number, formData: FormData) => {
+    const response = await api.put(`/products/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+  uploadImages: async (id: number, formData: FormData) => {
+    const response = await api.post(`/products/${id}/images`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+  deleteImage: async (productId: number, imageId: number) => {
+    const response = await api.delete(`/products/${productId}/images/${imageId}`);
+    return response.data;
+  },
+  setPrimaryImage: async (productId: number, imageId: number) => {
+    const response = await api.put(`/products/${productId}/images/${imageId}/primary`);
+    return response.data;
+  },
+  delete: async (id: number) => {
+    const response = await api.delete(`/products/${id}`);
+    return response.data;
+  },
+};
+
+// Categories
+export const categoriesAPI = {
+  getAll: async (params?: { is_for_sale?: boolean; search?: string }) => {
+    const response = await api.get("/categories", { params });
+    return response.data;
+  },
+  create: async (data: { name: string; is_for_sale: boolean }) => {
+    const response = await api.post("/categories", data);
+    return response.data;
+  },
+};
+
+// Sizes
+export const sizesAPI = {
+  getAll: async (params?: { is_for_sale?: boolean; search?: string }) => {
+    const response = await api.get("/sizes", { params });
+    return response.data;
+  },
+  create: async (data: { name: string; is_for_sale: boolean }) => {
+    const response = await api.post("/sizes", data);
+    return response.data;
+  },
+};
+
 // Clothing
 export const clothingAPI = {
   getAll: async (params?: {

@@ -10,6 +10,7 @@ import Layout from './components/layout/Layout'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Clients from './pages/Clients'
+import Products from './pages/Products'
 import Dresses from './pages/Dresses'
 import Clothing from './pages/Clothing'
 import Bookings from './pages/Bookings'
@@ -96,6 +97,8 @@ function App() {
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/clients" element={<Clients />} />
+                <Route path="/products" element={<Products />} />
+                {/* Legacy routes - redirect to products */}
                 <Route path="/dresses" element={<Dresses />} />
                 <Route path="/clothing" element={<Clothing />} />
                 <Route path="/bookings" element={<Bookings />} />

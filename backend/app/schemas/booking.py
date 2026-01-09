@@ -5,11 +5,13 @@ from decimal import Decimal
 
 from .client import ClientResponse
 from .dress import DressResponse, DressImageResponse
+from .product import ProductResponse, ProductImageResponse
 
 
 class BookingBase(BaseModel):
     client_id: int
-    dress_id: int
+    dress_id: Optional[int] = None  # Legacy - optional for backward compatibility
+    product_id: Optional[int] = None  # New unified product reference
     start_date: date
     end_date: date
     rental_price: Optional[Decimal] = None
@@ -36,7 +38,8 @@ class BookingUpdate(BaseModel):
 class BookingResponse(BaseModel):
     id: int
     client_id: int
-    dress_id: int
+    dress_id: Optional[int] = None
+    product_id: Optional[int] = None
     start_date: date
     end_date: date
     rental_price: Decimal
@@ -48,6 +51,7 @@ class BookingResponse(BaseModel):
     updated_at: Optional[datetime] = None
     client: Optional[ClientResponse] = None
     dress: Optional[DressResponse] = None
+    product: Optional[ProductResponse] = None
 
     class Config:
         from_attributes = True
@@ -67,5 +71,7 @@ class CalendarBooking(BaseModel):
     status: str
     client_name: str
     dress_name: str
+    product_name: Optional[str] = None
     dress_images: List[DressImageResponse] = []
+    product_images: List[ProductImageResponse] = []
 

@@ -5,11 +5,13 @@ from decimal import Decimal
 
 from .client import ClientResponse
 from .clothing import ClothingResponse
+from .product import ProductResponse
 
 
 class SaleBase(BaseModel):
     client_id: int
-    clothing_id: int
+    clothing_id: Optional[int] = None  # Legacy - optional for backward compatibility
+    product_id: Optional[int] = None  # New unified product reference
     quantity: int = 1
     unit_price: Optional[Decimal] = None
     sale_date: Optional[date] = None
@@ -30,7 +32,8 @@ class SaleUpdate(BaseModel):
 class SaleResponse(BaseModel):
     id: int
     client_id: int
-    clothing_id: int
+    clothing_id: Optional[int] = None
+    product_id: Optional[int] = None
     quantity: int
     unit_price: Decimal
     total_price: Decimal
@@ -40,6 +43,7 @@ class SaleResponse(BaseModel):
     updated_at: Optional[datetime] = None
     client: Optional[ClientResponse] = None
     clothing: Optional[ClothingResponse] = None
+    product: Optional[ProductResponse] = None
 
     class Config:
         from_attributes = True

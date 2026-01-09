@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { salesAPI, clientsAPI, clothingAPI } from "../../services/api";
+import { Plus } from "lucide-react";
+import { salesAPI, clientsAPI, productsAPI } from "../../services/api";
 import ImageSlideshow from "../ui/ImageSlideshow";
 import Autocomplete from "../ui/Autocomplete";
+import Modal from "../ui/Modal";
+import ClientForm from "./ClientForm";
 
 interface SaleFormProps {
   sale?: any;
@@ -14,30 +17,32 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+
   const [formData, setFormData] = useState({
     client_id: sale?.client_id || "",
-    clothing_id: sale?.clothing_id || "",
+    product_id: sale?.product_id || "",
     quantity: sale?.quantity || 1,
     unit_price: sale?.unit_price || "",
     sale_date: sale?.sale_date || new Date().toISOString().split("T")[0],
     notes: sale?.notes || "",
   });
 
-  const { data: clients } = useQuery({
+  const { data: clients, refetch: refetchClients } = useQuery({
     queryKey: ["clients-list"],
-    queryFn: () => clientsAPI.getAll({ limit: 100 }),
+    queryFn: () => clientsAPI.getAll({ limit: 500 }),
   });
 
-  const { data: clothing } = useQuery({
-    queryKey: ["clothing-in-stock"],
-    queryFn: () => clothingAPI.getAll({ limit: 100, in_stock: true }),
+  const { data: products } = useQuery({
+    queryKey: ["products-sale"],
+    queryFn: () => productsAPI.getAll({ type: "sale", limit: 500 }),
   });
 
   // Auto-fill price when item is selected
   useEffect(() => {
-    if (formData.clothing_id && !sale) {
-      const selectedItem = clothing?.items?.find(
-        (c: any) => c.id === parseInt(formData.clothing_id.toString())
+    if (formData.product_id && !sale) {
+      const selectedItem = products?.products?.find(
+        (p: any) => p.id === parseInt(formData.product_id.toString())
       );
       if (selectedItem) {
         setFormData((prev) => ({
@@ -46,14 +51,20 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
         }));
       }
     }
-  }, [formData.clothing_id, clothing, sale]);
+  }, [formData.product_id, products, sale]);
+
+  const handleClientCreated = (newClient: any) => {
+    refetchClients();
+    setFormData({ ...formData, client_id: newClient.id });
+    setIsClientModalOpen(false);
+  };
 
   const mutation = useMutation({
     mutationFn: (data: any) =>
       sale ? salesAPI.update(sale.id, data) : salesAPI.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
-      queryClient.invalidateQueries({ queryKey: ["clothing"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
       onSuccess();
     },
@@ -64,54 +75,67 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
     const submitData = {
       ...formData,
       client_id: parseInt(formData.client_id.toString()),
-      clothing_id: parseInt(formData.clothing_id.toString()),
+      product_id: parseInt(formData.product_id.toString()),
       quantity: parseInt(formData.quantity.toString()),
       unit_price: parseFloat(formData.unit_price.toString()),
     };
     mutation.mutate(submitData);
   };
 
-  const selectedItem = clothing?.items?.find(
-    (c: any) => c.id === parseInt(formData.clothing_id.toString())
+  const selectedItem = products?.products?.find(
+    (p: any) => p.id === parseInt(formData.product_id.toString())
   );
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
             {t("sales.client")} *
           </label>
-          <Autocomplete
-            options={clients?.clients || []}
-            value={formData.client_id ? parseInt(formData.client_id.toString()) : null}
-            onChange={(value) =>
-              setFormData({ ...formData, client_id: value || "" })
-            }
-            displayField="full_name"
-            placeholder={t("common.typeToSearch", { defaultValue: "Type to search..." })}
-            renderOption={(client) => (
-              <div>
-                <span className="font-medium">{client.full_name}</span>
-                {client.phone && (
-                  <span className="text-text-muted text-sm ml-2">
-                    {client.phone}
-                  </span>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Autocomplete
+                options={clients?.clients || []}
+                value={formData.client_id ? parseInt(formData.client_id.toString()) : null}
+                onChange={(value) =>
+                  setFormData({ ...formData, client_id: value || "" })
+                }
+                displayField="full_name"
+                placeholder={t("common.typeToSearch", { defaultValue: "Type to search..." })}
+                renderOption={(client) => (
+                  <div>
+                    <span className="font-medium">{client.full_name}</span>
+                    {client.phone && (
+                      <span className="text-text-muted text-sm ml-2">
+                        {client.phone}
+                      </span>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
-            required
-          />
+                required
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsClientModalOpen(true)}
+              className="p-2 rounded-lg border border-border bg-surface hover:bg-surface-hover text-primary transition-colors"
+              title={t("clients.addClient")}
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
             {t("sales.item")} *
           </label>
           <Autocomplete
-            options={clothing?.items || []}
-            value={formData.clothing_id ? parseInt(formData.clothing_id.toString()) : null}
+            options={products?.products || []}
+            value={formData.product_id ? parseInt(formData.product_id.toString()) : null}
             onChange={(value) =>
-              setFormData({ ...formData, clothing_id: value || "" })
+              setFormData({ ...formData, product_id: value || "" })
             }
             displayField="name"
             placeholder={t("common.typeToSearch", { defaultValue: "Type to search..." })}
@@ -125,7 +149,7 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
                       : "bg-error/10 text-error"
                   }`}
                 >
-                  Stock: {item.stock_quantity}
+                  Stock: {item.stock_quantity || 0}
                 </span>
               </div>
             )}
@@ -135,13 +159,13 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
       </div>
 
       {/* Product Image Slideshow */}
-      {selectedItem && (
+      {selectedItem && selectedItem.primary_image && (
         <div className="w-full max-w-xs mx-auto rounded-lg overflow-hidden">
           <ImageSlideshow
-            images={selectedItem.images || []}
+            images={[{ image_path: selectedItem.primary_image }]}
             alt={selectedItem.name || ""}
             aspectRatio="square"
-            fallbackEmoji="👔"
+            fallbackEmoji="📦"
           />
         </div>
       )}
@@ -245,5 +269,16 @@ export default function SaleForm({ sale, onSuccess }: SaleFormProps) {
         </button>
       </div>
     </form>
+
+    {/* Quick Client Creation Modal */}
+    <Modal
+      isOpen={isClientModalOpen}
+      onClose={() => setIsClientModalOpen(false)}
+      title={t("clients.addClient")}
+      size="md"
+    >
+      <ClientForm onSuccess={handleClientCreated} />
+    </Modal>
+    </>
   );
 }

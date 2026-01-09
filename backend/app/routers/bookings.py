@@ -7,6 +7,7 @@ from datetime import date, datetime
 from ..database import get_db
 from ..models.booking import Booking
 from ..models.dress import Dress, DressImage
+from ..models.product import Product, ProductImage, ProductType
 from ..schemas.booking import BookingCreate, BookingUpdate, BookingResponse, BookingListResponse, CalendarBooking
 from .auth import get_current_user
 
@@ -21,6 +22,7 @@ async def get_bookings(
     deposit_status: Optional[str] = None,
     client_id: Optional[int] = None,
     dress_id: Optional[int] = None,
+    product_id: Optional[int] = None,
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     sort_by: Optional[str] = Query("start_date", description="Field to sort by: start_date, rental_price, created_at"),
@@ -31,7 +33,8 @@ async def get_bookings(
     """Get all bookings with optional filters, sorting, and pagination"""
     query = db.query(Booking).options(
         joinedload(Booking.client),
-        joinedload(Booking.dress).joinedload(Dress.images)
+        joinedload(Booking.dress).joinedload(Dress.images),
+        joinedload(Booking.product).joinedload(Product.images)
     )
     
     if status:
@@ -45,6 +48,9 @@ async def get_bookings(
     
     if dress_id:
         query = query.filter(Booking.dress_id == dress_id)
+    
+    if product_id:
+        query = query.filter(Booking.product_id == product_id)
     
     if start_date:
         query = query.filter(Booking.start_date >= start_date)
@@ -71,13 +77,15 @@ async def get_calendar_bookings(
     start: date,
     end: date,
     dress_id: Optional[int] = None,
+    product_id: Optional[int] = None,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     """Get bookings for calendar view within a date range"""
     query = db.query(Booking).options(
         joinedload(Booking.client),
-        joinedload(Booking.dress).joinedload(Dress.images)
+        joinedload(Booking.dress).joinedload(Dress.images),
+        joinedload(Booking.product).joinedload(Product.images)
     ).filter(
         and_(
             Booking.start_date <= end,
@@ -88,6 +96,9 @@ async def get_calendar_bookings(
     
     if dress_id:
         query = query.filter(Booking.dress_id == dress_id)
+    
+    if product_id:
+        query = query.filter(Booking.product_id == product_id)
     
     bookings = query.all()
     
@@ -100,19 +111,36 @@ async def get_calendar_bookings(
             "completed": "#6366f1",  # indigo
         }.get(booking.booking_status, "#94a3b8")
         
+        # Get name from product or dress (prefer product)
+        item_name = ""
+        dress_images = []
+        product_images = []
+        
+        if booking.product:
+            item_name = booking.product.name
+            product_images = [
+                {"id": img.id, "image_path": img.image_path, "is_primary": img.is_primary}
+                for img in booking.product.images
+            ]
+        elif booking.dress:
+            item_name = booking.dress.name
+            dress_images = [
+                {"id": img.id, "image_path": img.image_path, "is_primary": img.is_primary}
+                for img in booking.dress.images
+            ]
+        
         calendar_events.append({
             "id": booking.id,
-            "title": f"{booking.dress.name} - {booking.client.full_name}",
+            "title": f"{item_name} - {booking.client.full_name}",
             "start": booking.start_date.isoformat(),
             "end": booking.end_date.isoformat(),
             "color": color,
             "status": booking.booking_status,
             "client_name": booking.client.full_name,
-            "dress_name": booking.dress.name,
-            "dress_images": [
-                {"id": img.id, "image_path": img.image_path, "is_primary": img.is_primary}
-                for img in booking.dress.images
-            ]
+            "dress_name": booking.dress.name if booking.dress else "",
+            "product_name": booking.product.name if booking.product else "",
+            "dress_images": dress_images,
+            "product_images": product_images
         })
     
     return calendar_events
@@ -127,7 +155,8 @@ async def get_booking(
     """Get a specific booking by ID"""
     booking = db.query(Booking).options(
         joinedload(Booking.client),
-        joinedload(Booking.dress)
+        joinedload(Booking.dress),
+        joinedload(Booking.product)
     ).filter(Booking.id == booking_id).first()
     
     if not booking:
@@ -142,43 +171,84 @@ async def create_booking(
     current_user = Depends(get_current_user)
 ):
     """Create a new booking"""
-    # Check if dress is available for the date range
-    dress = db.query(Dress).filter(Dress.id == booking.dress_id).first()
-    if not dress:
-        raise HTTPException(status_code=404, detail="Dress not found")
+    rental_price = booking.rental_price
+    deposit_amount = booking.deposit_amount
+    dress = None
+    product = None
     
-    # Check for overlapping bookings
-    overlapping = db.query(Booking).filter(
-        and_(
-            Booking.dress_id == booking.dress_id,
-            Booking.booking_status != "cancelled",
-            Booking.start_date <= booking.end_date,
-            Booking.end_date >= booking.start_date
-        )
-    ).first()
-    
-    if overlapping:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Dress is already booked from {overlapping.start_date} to {overlapping.end_date}"
-        )
+    # Check product or dress availability
+    if booking.product_id:
+        product = db.query(Product).filter(Product.id == booking.product_id).first()
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        if product.type != ProductType.rent:
+            raise HTTPException(status_code=400, detail="Product is not available for rent")
+        
+        rental_price = rental_price or product.rental_price
+        deposit_amount = deposit_amount or product.deposit_amount
+        
+        # Check for overlapping bookings
+        overlapping = db.query(Booking).filter(
+            and_(
+                Booking.product_id == booking.product_id,
+                Booking.booking_status != "cancelled",
+                Booking.start_date <= booking.end_date,
+                Booking.end_date >= booking.start_date
+            )
+        ).first()
+        
+        if overlapping:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Product is already booked from {overlapping.start_date} to {overlapping.end_date}"
+            )
+    elif booking.dress_id:
+        # Legacy: use dress_id
+        dress = db.query(Dress).filter(Dress.id == booking.dress_id).first()
+        if not dress:
+            raise HTTPException(status_code=404, detail="Dress not found")
+        
+        rental_price = rental_price or dress.rental_price
+        deposit_amount = deposit_amount or dress.deposit_amount
+        
+        # Check for overlapping bookings
+        overlapping = db.query(Booking).filter(
+            and_(
+                Booking.dress_id == booking.dress_id,
+                Booking.booking_status != "cancelled",
+                Booking.start_date <= booking.end_date,
+                Booking.end_date >= booking.start_date
+            )
+        ).first()
+        
+        if overlapping:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Dress is already booked from {overlapping.start_date} to {overlapping.end_date}"
+            )
+    else:
+        raise HTTPException(status_code=400, detail="Either product_id or dress_id is required")
     
     db_booking = Booking(
         client_id=booking.client_id,
         dress_id=booking.dress_id,
+        product_id=booking.product_id,
         start_date=booking.start_date,
         end_date=booking.end_date,
-        rental_price=booking.rental_price or dress.rental_price,
-        deposit_amount=booking.deposit_amount or dress.deposit_amount,
+        rental_price=rental_price,
+        deposit_amount=deposit_amount,
         deposit_status=booking.deposit_status or "pending",
         booking_status=booking.booking_status or "confirmed",
         notes=booking.notes
     )
     db.add(db_booking)
     
-    # Update dress status if booking starts today or earlier
+    # Update status if booking starts today or earlier
     if booking.start_date <= date.today():
-        dress.status = "rented"
+        if product:
+            product.status = "rented"
+        elif dress:
+            dress.status = "rented"
     
     db.commit()
     db.refresh(db_booking)
@@ -186,7 +256,8 @@ async def create_booking(
     # Reload with relationships
     return db.query(Booking).options(
         joinedload(Booking.client),
-        joinedload(Booking.dress)
+        joinedload(Booking.dress),
+        joinedload(Booking.product)
     ).filter(Booking.id == db_booking.id).first()
 
 
@@ -209,50 +280,83 @@ async def update_booking(
         new_start = update_data.get("start_date", db_booking.start_date)
         new_end = update_data.get("end_date", db_booking.end_date)
         
-        overlapping = db.query(Booking).filter(
-            and_(
-                Booking.dress_id == db_booking.dress_id,
-                Booking.id != booking_id,
-                Booking.booking_status != "cancelled",
-                Booking.start_date <= new_end,
-                Booking.end_date >= new_start
-            )
-        ).first()
+        # Check conflicts for product or dress
+        if db_booking.product_id:
+            overlapping = db.query(Booking).filter(
+                and_(
+                    Booking.product_id == db_booking.product_id,
+                    Booking.id != booking_id,
+                    Booking.booking_status != "cancelled",
+                    Booking.start_date <= new_end,
+                    Booking.end_date >= new_start
+                )
+            ).first()
+        else:
+            overlapping = db.query(Booking).filter(
+                and_(
+                    Booking.dress_id == db_booking.dress_id,
+                    Booking.id != booking_id,
+                    Booking.booking_status != "cancelled",
+                    Booking.start_date <= new_end,
+                    Booking.end_date >= new_start
+                )
+            ).first()
         
         if overlapping:
             raise HTTPException(
                 status_code=400,
-                detail=f"Dress is already booked from {overlapping.start_date} to {overlapping.end_date}"
+                detail=f"Item is already booked from {overlapping.start_date} to {overlapping.end_date}"
             )
     
     for field, value in update_data.items():
         setattr(db_booking, field, value)
     
-    # Update dress status based on booking status
-    dress = db.query(Dress).filter(Dress.id == db_booking.dress_id).first()
+    # Update item status based on booking status
     if db_booking.booking_status == "completed" or db_booking.booking_status == "cancelled":
-        # Check if there are other active bookings
-        active_bookings = db.query(Booking).filter(
-            and_(
-                Booking.dress_id == db_booking.dress_id,
-                Booking.id != booking_id,
-                Booking.booking_status.in_(["confirmed", "in_progress"]),
-                Booking.start_date <= date.today(),
-                Booking.end_date >= date.today()
-            )
-        ).count()
-        
-        if active_bookings == 0:
-            dress.status = "available"
+        # Check if there are other active bookings for product or dress
+        if db_booking.product_id:
+            product = db.query(Product).filter(Product.id == db_booking.product_id).first()
+            active_bookings = db.query(Booking).filter(
+                and_(
+                    Booking.product_id == db_booking.product_id,
+                    Booking.id != booking_id,
+                    Booking.booking_status.in_(["confirmed", "in_progress"]),
+                    Booking.start_date <= date.today(),
+                    Booking.end_date >= date.today()
+                )
+            ).count()
+            if active_bookings == 0 and product:
+                product.status = "available"
+        elif db_booking.dress_id:
+            dress = db.query(Dress).filter(Dress.id == db_booking.dress_id).first()
+            active_bookings = db.query(Booking).filter(
+                and_(
+                    Booking.dress_id == db_booking.dress_id,
+                    Booking.id != booking_id,
+                    Booking.booking_status.in_(["confirmed", "in_progress"]),
+                    Booking.start_date <= date.today(),
+                    Booking.end_date >= date.today()
+                )
+            ).count()
+            if active_bookings == 0 and dress:
+                dress.status = "available"
     elif db_booking.booking_status == "in_progress":
-        dress.status = "rented"
+        if db_booking.product_id:
+            product = db.query(Product).filter(Product.id == db_booking.product_id).first()
+            if product:
+                product.status = "rented"
+        elif db_booking.dress_id:
+            dress = db.query(Dress).filter(Dress.id == db_booking.dress_id).first()
+            if dress:
+                dress.status = "rented"
     
     db.commit()
     db.refresh(db_booking)
     
     return db.query(Booking).options(
         joinedload(Booking.client),
-        joinedload(Booking.dress)
+        joinedload(Booking.dress),
+        joinedload(Booking.product)
     ).filter(Booking.id == db_booking.id).first()
 
 

@@ -5,7 +5,7 @@ import { clientsAPI } from '../../services/api'
 
 interface ClientFormProps {
   client?: any
-  onSuccess: () => void
+  onSuccess: (data?: any) => void
 }
 
 export default function ClientForm({ client, onSuccess }: ClientFormProps) {
@@ -23,9 +23,10 @@ export default function ClientForm({ client, onSuccess }: ClientFormProps) {
   const mutation = useMutation({
     mutationFn: (data: any) =>
       client ? clientsAPI.update(client.id, data) : clientsAPI.create(data),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['clients'] })
-      onSuccess()
+      queryClient.invalidateQueries({ queryKey: ['clients-list'] })
+      onSuccess(data)
     },
   })
 

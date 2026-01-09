@@ -9,7 +9,10 @@ class Booking(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
-    dress_id = Column(Integer, ForeignKey("dresses.id", ondelete="CASCADE"), nullable=False)
+    # Legacy field - kept for backward compatibility
+    dress_id = Column(Integer, ForeignKey("dresses.id", ondelete="SET NULL"), nullable=True)
+    # New unified product reference
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="SET NULL"), nullable=True)
     start_date = Column(Date, nullable=False, index=True)
     end_date = Column(Date, nullable=False, index=True)
     rental_price = Column(Numeric(10, 2), nullable=False)
@@ -23,4 +26,5 @@ class Booking(Base):
     # Relationships
     client = relationship("Client", back_populates="bookings")
     dress = relationship("Dress", back_populates="bookings")
+    product = relationship("Product", backref="bookings")
 

@@ -82,6 +82,7 @@ export default function Sales() {
     mutationFn: (id: number) => salesAPI.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["clothing"] });
       setDeletingSale(null);
     },
@@ -91,6 +92,7 @@ export default function Sales() {
     mutationFn: (ids: number[]) => salesAPI.bulkDelete(ids),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["clothing"] });
       setSelectedItems(new Set());
       setIsBulkDeleteOpen(false);
@@ -114,6 +116,7 @@ export default function Sales() {
       const searchLower = search.toLowerCase();
       return (
         sale.client?.full_name?.toLowerCase().includes(searchLower) ||
+        sale.product?.name?.toLowerCase().includes(searchLower) ||
         sale.clothing?.name?.toLowerCase().includes(searchLower)
       );
     }) || [];
@@ -295,6 +298,7 @@ export default function Sales() {
                     const searchLower = search.toLowerCase();
                     return (
                       sale.client?.full_name?.toLowerCase().includes(searchLower) ||
+                      sale.product?.name?.toLowerCase().includes(searchLower) ||
                       sale.clothing?.name?.toLowerCase().includes(searchLower)
                     );
                   })
@@ -321,7 +325,7 @@ export default function Sales() {
                       {sale.client?.full_name}
                     </td>
                     <td className="px-4 py-3 text-text-secondary">
-                      {sale.clothing?.name}
+                      {sale.product?.name || sale.clothing?.name}
                     </td>
                     <td className="px-4 py-3 text-text-secondary">
                       {sale.quantity}
@@ -368,7 +372,7 @@ export default function Sales() {
         onClose={() => setDeletingSale(null)}
         onConfirm={() => deleteMutation.mutate(deletingSale.id)}
         title={t("common.confirmDelete")}
-        message={`${deletingSale?.client?.full_name} - ${deletingSale?.clothing?.name}`}
+        message={`${deletingSale?.client?.full_name} - ${deletingSale?.product?.name || deletingSale?.clothing?.name}`}
         loading={deleteMutation.isPending}
       />
 

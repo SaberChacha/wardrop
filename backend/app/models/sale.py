@@ -9,7 +9,10 @@ class Sale(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
-    clothing_id = Column(Integer, ForeignKey("clothing.id", ondelete="CASCADE"), nullable=False)
+    # Legacy field - kept for backward compatibility
+    clothing_id = Column(Integer, ForeignKey("clothing.id", ondelete="SET NULL"), nullable=True)
+    # New unified product reference
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="SET NULL"), nullable=True)
     quantity = Column(Integer, nullable=False, default=1)
     unit_price = Column(Numeric(10, 2), nullable=False)
     total_price = Column(Numeric(10, 2), nullable=False)
@@ -21,4 +24,5 @@ class Sale(Base):
     # Relationships
     client = relationship("Client", back_populates="sales")
     clothing = relationship("Clothing", back_populates="sales")
+    product = relationship("Product", backref="sales")
 

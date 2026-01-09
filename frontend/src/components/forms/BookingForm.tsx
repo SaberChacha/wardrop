@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { bookingsAPI, clientsAPI, dressesAPI } from "../../services/api";
+import { Plus } from "lucide-react";
+import { bookingsAPI, clientsAPI, productsAPI } from "../../services/api";
 import ImageSlideshow from "../ui/ImageSlideshow";
 import Autocomplete from "../ui/Autocomplete";
+import Modal from "../ui/Modal";
+import ClientForm from "./ClientForm";
 
 interface BookingFormProps {
   booking?: any;
@@ -14,9 +17,11 @@ export default function BookingForm({ booking, onSuccess }: BookingFormProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+
   const [formData, setFormData] = useState({
     client_id: booking?.client_id || "",
-    dress_id: booking?.dress_id || "",
+    product_id: booking?.product_id || "",
     start_date: booking?.start_date || "",
     end_date: booking?.end_date || "",
     rental_price: booking?.rental_price || "",
@@ -26,31 +31,37 @@ export default function BookingForm({ booking, onSuccess }: BookingFormProps) {
     notes: booking?.notes || "",
   });
 
-  const { data: clients } = useQuery({
+  const { data: clients, refetch: refetchClients } = useQuery({
     queryKey: ["clients-list"],
-    queryFn: () => clientsAPI.getAll({ limit: 100 }),
+    queryFn: () => clientsAPI.getAll({ limit: 500 }),
   });
 
-  const { data: dresses } = useQuery({
-    queryKey: ["dresses-available"],
-    queryFn: () => dressesAPI.getAll({ limit: 100 }),
+  const { data: products } = useQuery({
+    queryKey: ["products-rent"],
+    queryFn: () => productsAPI.getAll({ type: "rent", limit: 500 }),
   });
 
-  // Auto-fill prices when dress is selected
+  // Auto-fill prices when product is selected
   useEffect(() => {
-    if (formData.dress_id && !booking) {
-      const selectedDress = dresses?.dresses?.find(
-        (d: any) => d.id === parseInt(formData.dress_id.toString())
+    if (formData.product_id && !booking) {
+      const selectedProduct = products?.products?.find(
+        (p: any) => p.id === parseInt(formData.product_id.toString())
       );
-      if (selectedDress) {
+      if (selectedProduct) {
         setFormData((prev) => ({
           ...prev,
-          rental_price: selectedDress.rental_price,
-          deposit_amount: selectedDress.deposit_amount,
+          rental_price: selectedProduct.rental_price,
+          deposit_amount: selectedProduct.deposit_amount,
         }));
       }
     }
-  }, [formData.dress_id, dresses, booking]);
+  }, [formData.product_id, products, booking]);
+
+  const handleClientCreated = (newClient: any) => {
+    refetchClients();
+    setFormData({ ...formData, client_id: newClient.id });
+    setIsClientModalOpen(false);
+  };
 
   const mutation = useMutation({
     mutationFn: (data: any) =>
@@ -58,7 +69,7 @@ export default function BookingForm({ booking, onSuccess }: BookingFormProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
       queryClient.invalidateQueries({ queryKey: ["calendar-bookings"] });
-      queryClient.invalidateQueries({ queryKey: ["dresses"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       onSuccess();
     },
   });
@@ -68,70 +79,83 @@ export default function BookingForm({ booking, onSuccess }: BookingFormProps) {
     const submitData = {
       ...formData,
       client_id: parseInt(formData.client_id.toString()),
-      dress_id: parseInt(formData.dress_id.toString()),
+      product_id: parseInt(formData.product_id.toString()),
       rental_price: parseFloat(formData.rental_price.toString()),
       deposit_amount: parseFloat(formData.deposit_amount.toString()),
     };
     mutation.mutate(submitData);
   };
 
-  const selectedDress = dresses?.dresses?.find(
-    (d: any) => d.id === parseInt(formData.dress_id.toString())
+  const selectedProduct = products?.products?.find(
+    (p: any) => p.id === parseInt(formData.product_id.toString())
   );
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
             {t("bookings.client")} *
           </label>
-          <Autocomplete
-            options={clients?.clients || []}
-            value={formData.client_id ? parseInt(formData.client_id.toString()) : null}
-            onChange={(value) =>
-              setFormData({ ...formData, client_id: value || "" })
-            }
-            displayField="full_name"
-            placeholder={t("common.typeToSearch", { defaultValue: "Type to search..." })}
-            renderOption={(client) => (
-              <div>
-                <span className="font-medium">{client.full_name}</span>
-                {client.phone && (
-                  <span className="text-text-muted text-sm ml-2">
-                    {client.phone}
-                  </span>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Autocomplete
+                options={clients?.clients || []}
+                value={formData.client_id ? parseInt(formData.client_id.toString()) : null}
+                onChange={(value) =>
+                  setFormData({ ...formData, client_id: value || "" })
+                }
+                displayField="full_name"
+                placeholder={t("common.typeToSearch", { defaultValue: "Type to search..." })}
+                renderOption={(client) => (
+                  <div>
+                    <span className="font-medium">{client.full_name}</span>
+                    {client.phone && (
+                      <span className="text-text-muted text-sm ml-2">
+                        {client.phone}
+                      </span>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
-            required
-          />
+                required
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsClientModalOpen(true)}
+              className="p-2 rounded-lg border border-border bg-surface hover:bg-surface-hover text-primary transition-colors"
+              title={t("clients.addClient")}
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
-            {t("bookings.dress")} *
+            {t("bookings.product", { defaultValue: "Product" })} *
           </label>
           <Autocomplete
-            options={dresses?.dresses || []}
-            value={formData.dress_id ? parseInt(formData.dress_id.toString()) : null}
+            options={products?.products || []}
+            value={formData.product_id ? parseInt(formData.product_id.toString()) : null}
             onChange={(value) =>
-              setFormData({ ...formData, dress_id: value || "" })
+              setFormData({ ...formData, product_id: value || "" })
             }
             displayField="name"
             placeholder={t("common.typeToSearch", { defaultValue: "Type to search..." })}
-            renderOption={(dress) => (
+            renderOption={(product) => (
               <div className="flex items-center justify-between w-full">
-                <span className="font-medium">{dress.name}</span>
+                <span className="font-medium">{product.name}</span>
                 <span
                   className={`text-xs px-2 py-0.5 rounded-full ${
-                    dress.status === "available"
+                    product.status === "available"
                       ? "bg-success/10 text-success"
                       : "bg-warning/10 text-warning"
                   }`}
                 >
-                  {dress.status === "available"
-                    ? t("dresses.available")
-                    : t("dresses.rented")}
+                  {product.status === "available"
+                    ? t("products.statuses.available")
+                    : t("products.statuses.rented")}
                 </span>
               </div>
             )}
@@ -140,14 +164,14 @@ export default function BookingForm({ booking, onSuccess }: BookingFormProps) {
         </div>
       </div>
 
-      {/* Dress Image Slideshow */}
-      {selectedDress && (
+      {/* Product Image Slideshow */}
+      {selectedProduct && selectedProduct.primary_image && (
         <div className="w-full max-w-xs mx-auto rounded-lg overflow-hidden">
           <ImageSlideshow
-            images={selectedDress.images || []}
-            alt={selectedDress.name || ""}
+            images={[{ image_path: selectedProduct.primary_image }]}
+            alt={selectedProduct.name || ""}
             aspectRatio="3/4"
-            fallbackEmoji="👗"
+            fallbackEmoji="📦"
           />
         </div>
       )}
@@ -299,5 +323,16 @@ export default function BookingForm({ booking, onSuccess }: BookingFormProps) {
         </button>
       </div>
     </form>
+
+    {/* Quick Client Creation Modal */}
+    <Modal
+      isOpen={isClientModalOpen}
+      onClose={() => setIsClientModalOpen(false)}
+      title={t("clients.addClient")}
+      size="md"
+    >
+      <ClientForm onSuccess={handleClientCreated} />
+    </Modal>
+    </>
   );
 }

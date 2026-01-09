@@ -9,6 +9,7 @@ from .config import get_settings
 from .database import engine, Base
 from .routers import auth, clients, dresses, clothing, bookings, sales, reports, export, notifications, users
 from .routers import settings as settings_router
+from .routers import products, categories, sizes
 from .services.scheduler import start_scheduler, stop_scheduler
 
 settings = get_settings()
@@ -32,6 +33,7 @@ async def lifespan(app: FastAPI):
     os.makedirs(settings.upload_dir, exist_ok=True)
     os.makedirs(f"{settings.upload_dir}/dresses", exist_ok=True)
     os.makedirs(f"{settings.upload_dir}/clothing", exist_ok=True)
+    os.makedirs(f"{settings.upload_dir}/products", exist_ok=True)
     os.makedirs(f"{settings.upload_dir}/logos", exist_ok=True)
     
     # Start the scheduler for automatic booking status updates
@@ -75,8 +77,12 @@ app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads"
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(clients.router, prefix="/api/clients", tags=["Clients"])
-app.include_router(dresses.router, prefix="/api/dresses", tags=["Dresses"])
-app.include_router(clothing.router, prefix="/api/clothing", tags=["Clothing"])
+app.include_router(products.router, prefix="/api/products", tags=["Products"])
+app.include_router(categories.router, prefix="/api/categories", tags=["Categories"])
+app.include_router(sizes.router, prefix="/api/sizes", tags=["Sizes"])
+# Legacy endpoints (kept for backward compatibility)
+app.include_router(dresses.router, prefix="/api/dresses", tags=["Dresses (Legacy)"])
+app.include_router(clothing.router, prefix="/api/clothing", tags=["Clothing (Legacy)"])
 app.include_router(bookings.router, prefix="/api/bookings", tags=["Bookings"])
 app.include_router(sales.router, prefix="/api/sales", tags=["Sales"])
 app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])

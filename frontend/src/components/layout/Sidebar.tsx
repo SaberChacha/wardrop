@@ -4,7 +4,7 @@ import {
   LayoutDashboard,
   Users,
   Sparkles,
-  ShoppingBag,
+  Package,
   CalendarDays,
   Receipt,
   BarChart3,
@@ -31,8 +31,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: t('nav.dashboard') },
     { path: '/clients', icon: Users, label: t('nav.clients') },
-    { path: '/dresses', icon: Sparkles, label: t('nav.dresses') },
-    { path: '/clothing', icon: ShoppingBag, label: t('nav.clothing') },
+    { path: '/products', icon: Package, label: t('nav.products') },
     { path: '/bookings', icon: CalendarDays, label: t('nav.bookings') },
     { path: '/sales', icon: Receipt, label: t('nav.sales') },
     { path: '/calendar', icon: Calendar, label: t('nav.calendar') },

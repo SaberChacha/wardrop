@@ -6,6 +6,9 @@ from .booking import Booking
 from .sale import Sale
 from .notification import NotificationLog
 from .settings import Settings
+from .category import Category
+from .size import Size
+from .product import Product, ProductImage, ProductType
 
 __all__ = [
     "Admin",
@@ -17,6 +20,11 @@ __all__ = [
     "Booking",
     "Sale",
     "NotificationLog",
-    "Settings"
+    "Settings",
+    "Category",
+    "Size",
+    "Product",
+    "ProductImage",
+    "ProductType",
 ]
 

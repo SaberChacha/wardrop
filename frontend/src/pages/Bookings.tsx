@@ -129,6 +129,7 @@ export default function Bookings() {
       const searchLower = search.toLowerCase();
       return (
         booking.client?.full_name?.toLowerCase().includes(searchLower) ||
+        booking.product?.name?.toLowerCase().includes(searchLower) ||
         booking.dress?.name?.toLowerCase().includes(searchLower)
       );
     }) || [];
@@ -319,7 +320,7 @@ export default function Bookings() {
                   <th className="px-4 py-3 text-left">
                     {t("bookings.client")}
                   </th>
-                  <th className="px-4 py-3 text-left">{t("bookings.dress")}</th>
+                  <th className="px-4 py-3 text-left">{t("bookings.product", { defaultValue: "Product" })}</th>
                   <th className="px-4 py-3 text-left">
                     {t("bookings.startDate")}
                   </th>
@@ -344,6 +345,7 @@ export default function Bookings() {
                     const searchLower = search.toLowerCase();
                     return (
                       booking.client?.full_name?.toLowerCase().includes(searchLower) ||
+                      booking.product?.name?.toLowerCase().includes(searchLower) ||
                       booking.dress?.name?.toLowerCase().includes(searchLower)
                     );
                   })
@@ -370,7 +372,7 @@ export default function Bookings() {
                       {booking.client?.full_name}
                     </td>
                     <td className="px-4 py-3 text-text-secondary">
-                      {booking.dress?.name}
+                      {booking.product?.name || booking.dress?.name}
                     </td>
                     <td className="px-4 py-3 text-text-secondary">
                       <div className="flex items-center gap-2">
@@ -441,7 +443,7 @@ export default function Bookings() {
         onClose={() => setDeletingBooking(null)}
         onConfirm={() => deleteMutation.mutate(deletingBooking.id)}
         title={t("common.confirmDelete")}
-        message={`${deletingBooking?.client?.full_name} - ${deletingBooking?.dress?.name}`}
+        message={`${deletingBooking?.client?.full_name} - ${deletingBooking?.product?.name || deletingBooking?.dress?.name}`}
         loading={deleteMutation.isPending}
       />
 

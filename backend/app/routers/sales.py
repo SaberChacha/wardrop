@@ -7,6 +7,7 @@ from datetime import date
 from ..database import get_db
 from ..models.sale import Sale
 from ..models.clothing import Clothing, ClothingImage
+from ..models.product import Product, ProductType
 from ..schemas.sale import SaleCreate, SaleUpdate, SaleResponse, SaleListResponse
 from .auth import get_current_user
 
@@ -19,6 +20,7 @@ async def get_sales(
     limit: int = Query(50, ge=1, le=100),
     client_id: Optional[int] = None,
     clothing_id: Optional[int] = None,
+    product_id: Optional[int] = None,
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     sort_by: Optional[str] = Query("sale_date", description="Field to sort by: sale_date, total_price, created_at"),
@@ -29,7 +31,8 @@ async def get_sales(
     """Get all sales with optional filters, sorting, and pagination"""
     query = db.query(Sale).options(
         joinedload(Sale.client),
-        joinedload(Sale.clothing).joinedload(Clothing.images)
+        joinedload(Sale.clothing).joinedload(Clothing.images),
+        joinedload(Sale.product).joinedload(Product.images)
     )
     
     if client_id:
@@ -37,6 +40,9 @@ async def get_sales(
     
     if clothing_id:
         query = query.filter(Sale.clothing_id == clothing_id)
+    
+    if product_id:
+        query = query.filter(Sale.product_id == product_id)
     
     if start_date:
         query = query.filter(Sale.sale_date >= start_date)
@@ -67,7 +73,8 @@ async def get_sale(
     """Get a specific sale by ID"""
     sale = db.query(Sale).options(
         joinedload(Sale.client),
-        joinedload(Sale.clothing)
+        joinedload(Sale.clothing),
+        joinedload(Sale.product)
     ).filter(Sale.id == sale_id).first()
     
     if not sale:
@@ -82,24 +89,48 @@ async def create_sale(
     current_user = Depends(get_current_user)
 ):
     """Create a new sale and update stock"""
-    # Check clothing item exists and has stock
-    clothing = db.query(Clothing).filter(Clothing.id == sale.clothing_id).first()
-    if not clothing:
-        raise HTTPException(status_code=404, detail="Clothing item not found")
+    unit_price = sale.unit_price
+    clothing = None
+    product = None
     
-    if clothing.stock_quantity < sale.quantity:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Insufficient stock. Available: {clothing.stock_quantity}"
-        )
+    # Check product or clothing availability
+    if sale.product_id:
+        product = db.query(Product).filter(Product.id == sale.product_id).first()
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        if product.type != ProductType.sale:
+            raise HTTPException(status_code=400, detail="Product is not available for sale")
+        
+        if product.stock_quantity is not None and product.stock_quantity < sale.quantity:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient stock. Available: {product.stock_quantity}"
+            )
+        
+        unit_price = unit_price or product.sale_price
+    elif sale.clothing_id:
+        # Legacy: use clothing_id
+        clothing = db.query(Clothing).filter(Clothing.id == sale.clothing_id).first()
+        if not clothing:
+            raise HTTPException(status_code=404, detail="Clothing item not found")
+        
+        if clothing.stock_quantity < sale.quantity:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient stock. Available: {clothing.stock_quantity}"
+            )
+        
+        unit_price = unit_price or clothing.sale_price
+    else:
+        raise HTTPException(status_code=400, detail="Either product_id or clothing_id is required")
     
     # Calculate total price
-    unit_price = sale.unit_price or clothing.sale_price
     total_price = unit_price * sale.quantity
     
     db_sale = Sale(
         client_id=sale.client_id,
         clothing_id=sale.clothing_id,
+        product_id=sale.product_id,
         quantity=sale.quantity,
         unit_price=unit_price,
         total_price=total_price,
@@ -109,7 +140,12 @@ async def create_sale(
     db.add(db_sale)
     
     # Deduct from stock
-    clothing.stock_quantity -= sale.quantity
+    if product and product.stock_quantity is not None:
+        product.stock_quantity -= sale.quantity
+        if product.stock_quantity <= 0:
+            product.status = "sold_out"
+    elif clothing:
+        clothing.stock_quantity -= sale.quantity
     
     db.commit()
     db.refresh(db_sale)
@@ -117,7 +153,8 @@ async def create_sale(
     # Reload with relationships
     return db.query(Sale).options(
         joinedload(Sale.client),
-        joinedload(Sale.clothing)
+        joinedload(Sale.clothing),
+        joinedload(Sale.product)
     ).filter(Sale.id == db_sale.id).first()
 
 
@@ -137,16 +174,27 @@ async def update_sale(
     
     # Handle quantity change - adjust stock
     if "quantity" in update_data:
-        clothing = db.query(Clothing).filter(Clothing.id == db_sale.clothing_id).first()
         quantity_diff = update_data["quantity"] - db_sale.quantity
         
-        if quantity_diff > 0 and clothing.stock_quantity < quantity_diff:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Insufficient stock. Available: {clothing.stock_quantity}"
-            )
-        
-        clothing.stock_quantity -= quantity_diff
+        if db_sale.product_id:
+            product = db.query(Product).filter(Product.id == db_sale.product_id).first()
+            if product and product.stock_quantity is not None:
+                if quantity_diff > 0 and product.stock_quantity < quantity_diff:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Insufficient stock. Available: {product.stock_quantity}"
+                    )
+                product.stock_quantity -= quantity_diff
+                product.status = "available" if product.stock_quantity > 0 else "sold_out"
+        elif db_sale.clothing_id:
+            clothing = db.query(Clothing).filter(Clothing.id == db_sale.clothing_id).first()
+            if clothing:
+                if quantity_diff > 0 and clothing.stock_quantity < quantity_diff:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Insufficient stock. Available: {clothing.stock_quantity}"
+                    )
+                clothing.stock_quantity -= quantity_diff
         
         # Recalculate total
         unit_price = update_data.get("unit_price", db_sale.unit_price)
@@ -162,7 +210,8 @@ async def update_sale(
     
     return db.query(Sale).options(
         joinedload(Sale.client),
-        joinedload(Sale.clothing)
+        joinedload(Sale.clothing),
+        joinedload(Sale.product)
     ).filter(Sale.id == db_sale.id).first()
 
 
@@ -180,9 +229,15 @@ async def delete_sale(
     
     # Restore stock if requested
     if restore_stock:
-        clothing = db.query(Clothing).filter(Clothing.id == sale.clothing_id).first()
-        if clothing:
-            clothing.stock_quantity += sale.quantity
+        if sale.product_id:
+            product = db.query(Product).filter(Product.id == sale.product_id).first()
+            if product and product.stock_quantity is not None:
+                product.stock_quantity += sale.quantity
+                product.status = "available"
+        elif sale.clothing_id:
+            clothing = db.query(Clothing).filter(Clothing.id == sale.clothing_id).first()
+            if clothing:
+                clothing.stock_quantity += sale.quantity
     
     db.delete(sale)
     db.commit()
@@ -201,9 +256,15 @@ async def bulk_delete_sales(
     if restore_stock:
         sales = db.query(Sale).filter(Sale.id.in_(ids)).all()
         for sale in sales:
-            clothing = db.query(Clothing).filter(Clothing.id == sale.clothing_id).first()
-            if clothing:
-                clothing.stock_quantity += sale.quantity
+            if sale.product_id:
+                product = db.query(Product).filter(Product.id == sale.product_id).first()
+                if product and product.stock_quantity is not None:
+                    product.stock_quantity += sale.quantity
+                    product.status = "available"
+            elif sale.clothing_id:
+                clothing = db.query(Clothing).filter(Clothing.id == sale.clothing_id).first()
+                if clothing:
+                    clothing.stock_quantity += sale.quantity
     
     # Now delete the sales
     deleted_count = db.query(Sale).filter(Sale.id.in_(ids)).delete(synchronize_session=False)
