@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "Wardrop",
-    "tagline": "Gestion de Location de Robes"
+    "tagline": "Gestion de Boutique - Location et Vente"
   },
   "nav": {
     "dashboard": "Tableau de bord",
