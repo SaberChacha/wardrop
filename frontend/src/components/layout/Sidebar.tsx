@@ -23,8 +23,9 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { isAdmin } = useAuth()
+  const isRTL = i18n.language === 'ar' || document.documentElement.dir === 'rtl'
 
   // Navigation items available to all authenticated users
   const navItems = [
@@ -50,9 +51,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'fixed top-0 left-0 z-50 h-full w-64 bg-surface border-r border-border transform transition-transform duration-300 ease-in-out',
+        'fixed top-0 z-50 h-full w-64 bg-surface transform transition-transform duration-300 ease-in-out',
+        isRTL ? 'right-0 border-l border-border' : 'left-0 border-r border-border',
         'lg:translate-x-0',
-        isOpen ? 'translate-x-0' : '-translate-x-full'
+        isOpen 
+          ? 'translate-x-0' 
+          : isRTL 
+            ? 'translate-x-full' 
+            : '-translate-x-full'
       )}
     >
       {/* Logo */}
