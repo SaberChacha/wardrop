@@ -134,11 +134,40 @@
 
 /* Input styles */
 .input-field {
-  @apply w-full py-2.5 rounded-lg border border-border bg-surface;
+  @apply w-full px-4 py-2.5 rounded-lg border border-border bg-surface;
   @apply focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary;
   @apply transition-all placeholder:text-text-muted;
-  padding-left: 1rem;
-  padding-right: 1rem;
+}
+
+/* Override padding for inputs with icons */
+.input-field.pl-10,
+.input-field[class*="pl-10"] {
+  padding-left: 2.5rem !important;
+}
+
+.input-field.pr-10,
+.input-field[class*="pr-10"] {
+  padding-right: 2.5rem !important;
+}
+
+.input-field.pl-9,
+.input-field[class*="pl-9"] {
+  padding-left: 2.25rem !important;
+}
+
+.input-field.pr-9,
+.input-field[class*="pr-9"] {
+  padding-right: 2.25rem !important;
+}
+
+/* RTL padding overrides */
+[dir="rtl"] .input-field.rtl\:pr-10 {
+  padding-right: 2.5rem !important;
+  padding-left: 1rem !important;
+}
+
+[dir="rtl"] .input-field.rtl\:pl-3 {
+  padding-left: 0.75rem !important;
 }
 
 /* Select styles */

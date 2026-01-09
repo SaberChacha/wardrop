@@ -37,6 +37,7 @@
     "monthlyRevenue": "Revenu Mensuel",
     "rentalRevenue": "Location",
     "salesRevenue": "Ventes",
+    "salesProfit": "Bénéfice des ventes",
     "pendingDeposits": "Dépôts en attente",
     "lowStock": "Stock Faible",
     "upcomingReturns": "Retours à venir"
@@ -197,7 +198,8 @@
     "profit": "Bénéfice",
     "exportReport": "Exporter le rapport",
     "bookingsCount": "réservations",
-    "purchasesCount": "achats"
+    "purchasesCount": "achats",
+    "revenueBreakdown": "Répartition des revenus"
   },
   "export": {
     "export": "Exporter",

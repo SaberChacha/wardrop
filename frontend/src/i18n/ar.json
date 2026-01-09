@@ -37,6 +37,7 @@
     "monthlyRevenue": "الإيرادات الشهرية",
     "rentalRevenue": "التأجير",
     "salesRevenue": "المبيعات",
+    "salesProfit": "أرباح المبيعات",
     "pendingDeposits": "الضمانات المعلقة",
     "lowStock": "مخزون منخفض",
     "upcomingReturns": "الإرجاعات القادمة"
@@ -197,7 +198,8 @@
     "profit": "الربح",
     "exportReport": "تصدير التقرير",
     "bookingsCount": "حجوزات",
-    "purchasesCount": "مشتريات"
+    "purchasesCount": "مشتريات",
+    "revenueBreakdown": "تفاصيل الإيرادات"
   },
   "export": {
     "export": "تصدير",
