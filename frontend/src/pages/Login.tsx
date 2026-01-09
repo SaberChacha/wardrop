@@ -7,9 +7,8 @@ import { useAuth } from '../hooks/useAuth'
 export default function Login() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { login, register, isAuthenticated } = useAuth()
+  const { login, isAuthenticated } = useAuth()
   
-  const [isRegister, setIsRegister] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -17,7 +16,6 @@ export default function Login() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    name: '',
   })
 
   // Redirect if already authenticated
@@ -32,14 +30,10 @@ export default function Login() {
     setLoading(true)
 
     try {
-      if (isRegister) {
-        await register(formData.email, formData.password, formData.name)
-      } else {
-        await login(formData.email, formData.password)
-      }
+      await login(formData.email, formData.password)
       navigate('/', { replace: true })
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Une erreur est survenue')
+      setError(err.response?.data?.detail || t('common.error'))
     } finally {
       setLoading(false)
     }
@@ -81,10 +75,10 @@ export default function Login() {
 
           <div className="text-center mb-8">
             <h2 className="text-3xl font-heading font-semibold text-text-primary mb-2">
-              {isRegister ? 'Créer un compte' : t('auth.welcomeBack')}
+              {t('auth.welcomeBack')}
             </h2>
             <p className="text-text-secondary">
-              {isRegister ? 'Configuration initiale du dashboard' : t('auth.loginSubtitle')}
+              {t('auth.loginSubtitle')}
             </p>
           </div>
 
@@ -95,22 +89,6 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {isRegister && (
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Nom
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="input-field"
-                  placeholder="Votre nom"
-                  required
-                />
-              </div>
-            )}
-
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
                 {t('auth.email')}
@@ -159,19 +137,10 @@ export default function Login() {
                   {t('common.loading')}
                 </span>
               ) : (
-                isRegister ? 'Créer le compte' : t('auth.login')
+                t('auth.login')
               )}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setIsRegister(!isRegister)}
-              className="text-sm text-primary hover:underline"
-            >
-              {isRegister ? 'Déjà un compte? Se connecter' : 'Première utilisation? Créer un compte'}
-            </button>
-          </div>
         </div>
       </div>
     </div>
