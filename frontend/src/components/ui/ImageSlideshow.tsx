@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 interface ImageSlideshowProps {
-  images: { id: number; image_path: string; is_primary?: boolean }[];
+  images: { id?: number; image_path: string; is_primary?: boolean }[];
   alt: string;
   aspectRatio?: "square" | "3/4";
   fallbackEmoji?: string;
