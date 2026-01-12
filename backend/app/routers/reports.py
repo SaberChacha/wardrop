@@ -11,6 +11,7 @@ from ..models.dress import Dress
 from ..models.clothing import Clothing
 from ..models.client import Client
 from ..models.expense import Expense
+from ..models.product import Product
 from ..schemas.reports import (
     DashboardStats, 
     EarningsReport, 
@@ -36,6 +37,10 @@ async def get_dashboard_stats(
     total_clients = db.query(Client).count()
     total_dresses = db.query(Dress).count()
     total_clothing = db.query(Clothing).count()
+    
+    # New product counts
+    products_for_rent = db.query(Product).filter(Product.type == 'rent').count()
+    products_for_sale = db.query(Product).filter(Product.type == 'sale').count()
     
     # Active bookings (confirmed or in_progress)
     active_bookings = db.query(Booking).filter(
@@ -71,11 +76,17 @@ async def get_dashboard_stats(
         Booking.booking_status != "cancelled"
     ).scalar() or 0
     
-    # Low stock items (less than 3)
-    low_stock_count = db.query(Clothing).filter(
+    # Low stock items (less than 3) - check both legacy Clothing and new Products
+    low_stock_clothing = db.query(Clothing).filter(
         Clothing.stock_quantity < 3,
         Clothing.stock_quantity > 0
     ).count()
+    low_stock_products = db.query(Product).filter(
+        Product.type == 'sale',
+        Product.stock_quantity < 3,
+        Product.stock_quantity > 0
+    ).count()
+    low_stock_count = low_stock_clothing + low_stock_products
     
     # Upcoming returns (bookings ending in next 7 days)
     next_week = today + timedelta(days=7)
@@ -97,6 +108,8 @@ async def get_dashboard_stats(
         "total_clients": total_clients,
         "total_dresses": total_dresses,
         "total_clothing": total_clothing,
+        "products_for_rent": products_for_rent,
+        "products_for_sale": products_for_sale,
         "active_bookings": active_bookings,
         "monthly_rental_revenue": float(monthly_rental_revenue),
         "monthly_sales_revenue": float(monthly_sales_revenue),

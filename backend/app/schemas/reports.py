@@ -7,6 +7,8 @@ class DashboardStats(BaseModel):
     total_clients: int
     total_dresses: int
     total_clothing: int
+    products_for_rent: int
+    products_for_sale: int
     active_bookings: int
     monthly_rental_revenue: float
     monthly_sales_revenue: float
