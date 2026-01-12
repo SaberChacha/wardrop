@@ -279,6 +279,7 @@
     "noResults": "Aucun résultat"
   },
   "sort": {
+    "date": "Date",
     "dateAdded": "Date d'ajout",
     "startDate": "Date de début",
     "saleDate": "Date de vente",

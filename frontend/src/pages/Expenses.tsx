@@ -189,8 +189,8 @@ export default function Expenses() {
         <h1 className="text-3xl font-heading font-semibold text-text-primary">
           {t("expenses.title")}
         </h1>
-        <button onClick={() => setIsModalOpen(true)} className="btn-primary">
-          <Plus className="w-5 h-5 mr-2" />
+        <button onClick={() => setIsModalOpen(true)} className="btn-primary whitespace-nowrap">
+          <Plus className="w-5 h-5 mr-2 rtl:mr-0 rtl:ml-2 flex-shrink-0" />
           {t("expenses.addExpense")}
         </button>
       </div>
