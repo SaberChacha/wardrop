@@ -1,7 +1,15 @@
 import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Calendar, Search, CheckSquare, Square, XCircle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Calendar,
+  Search,
+  CheckSquare,
+  Square,
+  XCircle,
+} from "lucide-react";
 import { bookingsAPI } from "../services/api";
 import { formatCurrency, formatDate, getStatusColor } from "../lib/utils";
 import Modal from "../components/ui/Modal";
@@ -124,19 +132,22 @@ export default function Bookings() {
   };
 
   const toggleSelectAll = () => {
-    const visibleBookings = data?.bookings?.filter((booking: any) => {
-      if (!search) return true;
-      const searchLower = search.toLowerCase();
-      return (
-        booking.client?.full_name?.toLowerCase().includes(searchLower) ||
-        booking.product?.name?.toLowerCase().includes(searchLower) ||
-        booking.dress?.name?.toLowerCase().includes(searchLower)
-      );
-    }) || [];
+    const visibleBookings =
+      data?.bookings?.filter((booking: any) => {
+        if (!search) return true;
+        const searchLower = search.toLowerCase();
+        return (
+          booking.client?.full_name?.toLowerCase().includes(searchLower) ||
+          booking.product?.name?.toLowerCase().includes(searchLower) ||
+          booking.dress?.name?.toLowerCase().includes(searchLower)
+        );
+      }) || [];
     if (selectedItems.size === visibleBookings.length) {
       setSelectedItems(new Set());
     } else {
-      setSelectedItems(new Set(visibleBookings.map((booking: any) => booking.id)));
+      setSelectedItems(
+        new Set(visibleBookings.map((booking: any) => booking.id))
+      );
     }
   };
 
@@ -216,7 +227,9 @@ export default function Bookings() {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            placeholder={t("bookings.searchPlaceholder", { defaultValue: "Search client or dress..." })}
+            placeholder={t("bookings.searchPlaceholder", {
+              defaultValue: "Search client or dress...",
+            })}
             className="input-field pl-10 rtl:pl-3 rtl:pr-10"
           />
         </div>
@@ -263,7 +276,10 @@ export default function Bookings() {
                 id: "dateRange",
                 label: t("bookings.dateRange", { defaultValue: "Date Range" }),
                 type: "dateRange",
-                value: { start: dateFilters.startDate, end: dateFilters.endDate },
+                value: {
+                  start: dateFilters.startDate,
+                  end: dateFilters.endDate,
+                },
               },
             ]}
             onFilterChange={(id, value) => {
@@ -317,23 +333,25 @@ export default function Bookings() {
                       )}
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-left">
+                  <th className="px-4 py-3 text-start">
                     {t("bookings.client")}
                   </th>
-                  <th className="px-4 py-3 text-left">{t("bookings.product", { defaultValue: "Product" })}</th>
-                  <th className="px-4 py-3 text-left">
+                  <th className="px-4 py-3 text-start">
+                    {t("bookings.product", { defaultValue: "Product" })}
+                  </th>
+                  <th className="px-4 py-3 text-start">
                     {t("bookings.startDate")}
                   </th>
-                  <th className="px-4 py-3 text-left">
+                  <th className="px-4 py-3 text-start">
                     {t("bookings.endDate")}
                   </th>
-                  <th className="px-4 py-3 text-left">
+                  <th className="px-4 py-3 text-start">
                     {t("bookings.rentalPrice")}
                   </th>
-                  <th className="px-4 py-3 text-left">
+                  <th className="px-4 py-3 text-start">
                     {t("bookings.depositStatus")}
                   </th>
-                  <th className="px-4 py-3 text-left">
+                  <th className="px-4 py-3 text-start">
                     {t("bookings.bookingStatus")}
                   </th>
                 </tr>
@@ -344,72 +362,78 @@ export default function Bookings() {
                     if (!search) return true;
                     const searchLower = search.toLowerCase();
                     return (
-                      booking.client?.full_name?.toLowerCase().includes(searchLower) ||
-                      booking.product?.name?.toLowerCase().includes(searchLower) ||
+                      booking.client?.full_name
+                        ?.toLowerCase()
+                        .includes(searchLower) ||
+                      booking.product?.name
+                        ?.toLowerCase()
+                        .includes(searchLower) ||
                       booking.dress?.name?.toLowerCase().includes(searchLower)
                     );
                   })
                   .map((booking: any) => (
-                  <tr
-                    key={booking.id}
-                    className={`table-row cursor-pointer hover:bg-primary/5 ${selectedItems.has(booking.id) ? 'bg-primary/10' : ''}`}
-                    onDoubleClick={() => setSelectedBooking(booking)}
-                    onTouchEnd={(e) => handleBookingTap(booking, e)}
-                  >
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={(e) => toggleSelection(booking.id, e)}
-                        className="p-1 rounded hover:bg-surface-hover"
-                      >
-                        {selectedItems.has(booking.id) ? (
-                          <CheckSquare className="w-5 h-5 text-primary" />
-                        ) : (
-                          <Square className="w-5 h-5 text-text-muted" />
-                        )}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3 font-medium text-text-primary">
-                      {booking.client?.full_name}
-                    </td>
-                    <td className="px-4 py-3 text-text-secondary">
-                      {booking.product?.name || booking.dress?.name}
-                    </td>
-                    <td className="px-4 py-3 text-text-secondary">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        {formatDate(booking.start_date, i18n.language)}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-text-secondary">
-                      {formatDate(booking.end_date, i18n.language)}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-primary">
-                      {formatCurrency(booking.rental_price)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`badge ${getStatusColor(
-                          booking.deposit_status
-                        )}`}
-                      >
-                        {t(
-                          `bookings.depositStatuses.${booking.deposit_status}`
-                        )}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`badge ${getStatusColor(
-                          booking.booking_status
-                        )}`}
-                      >
-                        {t(
-                          `bookings.bookingStatuses.${booking.booking_status}`
-                        )}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                    <tr
+                      key={booking.id}
+                      className={`table-row cursor-pointer hover:bg-primary/5 ${
+                        selectedItems.has(booking.id) ? "bg-primary/10" : ""
+                      }`}
+                      onDoubleClick={() => setSelectedBooking(booking)}
+                      onTouchEnd={(e) => handleBookingTap(booking, e)}
+                    >
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={(e) => toggleSelection(booking.id, e)}
+                          className="p-1 rounded hover:bg-surface-hover"
+                        >
+                          {selectedItems.has(booking.id) ? (
+                            <CheckSquare className="w-5 h-5 text-primary" />
+                          ) : (
+                            <Square className="w-5 h-5 text-text-muted" />
+                          )}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-text-primary">
+                        {booking.client?.full_name}
+                      </td>
+                      <td className="px-4 py-3 text-text-secondary">
+                        {booking.product?.name || booking.dress?.name}
+                      </td>
+                      <td className="px-4 py-3 text-text-secondary">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          {formatDate(booking.start_date, i18n.language)}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-text-secondary">
+                        {formatDate(booking.end_date, i18n.language)}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-primary">
+                        {formatCurrency(booking.rental_price)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`badge ${getStatusColor(
+                            booking.deposit_status
+                          )}`}
+                        >
+                          {t(
+                            `bookings.depositStatuses.${booking.deposit_status}`
+                          )}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`badge ${getStatusColor(
+                            booking.booking_status
+                          )}`}
+                        >
+                          {t(
+                            `bookings.bookingStatuses.${booking.booking_status}`
+                          )}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -443,7 +467,9 @@ export default function Bookings() {
         onClose={() => setDeletingBooking(null)}
         onConfirm={() => deleteMutation.mutate(deletingBooking.id)}
         title={t("common.confirmDelete")}
-        message={`${deletingBooking?.client?.full_name} - ${deletingBooking?.product?.name || deletingBooking?.dress?.name}`}
+        message={`${deletingBooking?.client?.full_name} - ${
+          deletingBooking?.product?.name || deletingBooking?.dress?.name
+        }`}
         loading={deleteMutation.isPending}
       />
 

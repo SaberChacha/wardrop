@@ -234,14 +234,14 @@ export default function Clients() {
                       )}
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-left">
+                  <th className="px-4 py-3 text-start">
                     {t("clients.fullName")}
                   </th>
-                  <th className="px-4 py-3 text-left">{t("clients.phone")}</th>
-                  <th className="px-4 py-3 text-left">
+                  <th className="px-4 py-3 text-start">{t("clients.phone")}</th>
+                  <th className="px-4 py-3 text-start">
                     {t("clients.whatsapp")}
                   </th>
-                  <th className="px-4 py-3 text-left hidden md:table-cell">
+                  <th className="px-4 py-3 text-start hidden md:table-cell">
                     {t("clients.address")}
                   </th>
                 </tr>

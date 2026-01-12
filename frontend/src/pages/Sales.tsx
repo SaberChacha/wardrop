@@ -1,7 +1,14 @@
 import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Search, CheckSquare, Square, XCircle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Search,
+  CheckSquare,
+  Square,
+  XCircle,
+} from "lucide-react";
 import { salesAPI } from "../services/api";
 import { formatCurrency, formatDate } from "../lib/utils";
 import Modal from "../components/ui/Modal";
@@ -111,15 +118,16 @@ export default function Sales() {
   };
 
   const toggleSelectAll = () => {
-    const visibleSales = data?.sales?.filter((sale: any) => {
-      if (!search) return true;
-      const searchLower = search.toLowerCase();
-      return (
-        sale.client?.full_name?.toLowerCase().includes(searchLower) ||
-        sale.product?.name?.toLowerCase().includes(searchLower) ||
-        sale.clothing?.name?.toLowerCase().includes(searchLower)
-      );
-    }) || [];
+    const visibleSales =
+      data?.sales?.filter((sale: any) => {
+        if (!search) return true;
+        const searchLower = search.toLowerCase();
+        return (
+          sale.client?.full_name?.toLowerCase().includes(searchLower) ||
+          sale.product?.name?.toLowerCase().includes(searchLower) ||
+          sale.clothing?.name?.toLowerCase().includes(searchLower)
+        );
+      }) || [];
     if (selectedItems.size === visibleSales.length) {
       setSelectedItems(new Set());
     } else {
@@ -203,7 +211,9 @@ export default function Sales() {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            placeholder={t("sales.searchPlaceholder", { defaultValue: "Search client or item..." })}
+            placeholder={t("sales.searchPlaceholder", {
+              defaultValue: "Search client or item...",
+            })}
             className="input-field pl-10 rtl:pl-3 rtl:pr-10"
           />
         </div>
@@ -228,7 +238,10 @@ export default function Sales() {
                 id: "dateRange",
                 label: t("sales.dateRange", { defaultValue: "Date Range" }),
                 type: "dateRange",
-                value: { start: dateFilters.startDate, end: dateFilters.endDate },
+                value: {
+                  start: dateFilters.startDate,
+                  end: dateFilters.endDate,
+                },
               },
             ]}
             onFilterChange={(id, value) => {
@@ -279,16 +292,20 @@ export default function Sales() {
                       )}
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-left">{t("sales.client")}</th>
-                  <th className="px-4 py-3 text-left">{t("sales.item")}</th>
-                  <th className="px-4 py-3 text-left">{t("sales.quantity")}</th>
-                  <th className="px-4 py-3 text-left">
+                  <th className="px-4 py-3 text-start">{t("sales.client")}</th>
+                  <th className="px-4 py-3 text-start">{t("sales.item")}</th>
+                  <th className="px-4 py-3 text-start">
+                    {t("sales.quantity")}
+                  </th>
+                  <th className="px-4 py-3 text-start">
                     {t("sales.unitPrice")}
                   </th>
-                  <th className="px-4 py-3 text-left">
+                  <th className="px-4 py-3 text-start">
                     {t("sales.totalPrice")}
                   </th>
-                  <th className="px-4 py-3 text-left">{t("sales.saleDate")}</th>
+                  <th className="px-4 py-3 text-start">
+                    {t("sales.saleDate")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -297,50 +314,54 @@ export default function Sales() {
                     if (!search) return true;
                     const searchLower = search.toLowerCase();
                     return (
-                      sale.client?.full_name?.toLowerCase().includes(searchLower) ||
+                      sale.client?.full_name
+                        ?.toLowerCase()
+                        .includes(searchLower) ||
                       sale.product?.name?.toLowerCase().includes(searchLower) ||
                       sale.clothing?.name?.toLowerCase().includes(searchLower)
                     );
                   })
                   .map((sale: any) => (
-                  <tr
-                    key={sale.id}
-                    className={`table-row cursor-pointer hover:bg-primary/5 ${selectedItems.has(sale.id) ? 'bg-primary/10' : ''}`}
-                    onDoubleClick={() => setSelectedSale(sale)}
-                    onTouchEnd={(e) => handleSaleTap(sale, e)}
-                  >
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={(e) => toggleSelection(sale.id, e)}
-                        className="p-1 rounded hover:bg-surface-hover"
-                      >
-                        {selectedItems.has(sale.id) ? (
-                          <CheckSquare className="w-5 h-5 text-primary" />
-                        ) : (
-                          <Square className="w-5 h-5 text-text-muted" />
-                        )}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3 font-medium text-text-primary">
-                      {sale.client?.full_name}
-                    </td>
-                    <td className="px-4 py-3 text-text-secondary">
-                      {sale.product?.name || sale.clothing?.name}
-                    </td>
-                    <td className="px-4 py-3 text-text-secondary">
-                      {sale.quantity}
-                    </td>
-                    <td className="px-4 py-3 text-text-secondary">
-                      {formatCurrency(sale.unit_price)}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-primary">
-                      {formatCurrency(sale.total_price)}
-                    </td>
-                    <td className="px-4 py-3 text-text-secondary">
-                      {formatDate(sale.sale_date, i18n.language)}
-                    </td>
-                  </tr>
-                ))}
+                    <tr
+                      key={sale.id}
+                      className={`table-row cursor-pointer hover:bg-primary/5 ${
+                        selectedItems.has(sale.id) ? "bg-primary/10" : ""
+                      }`}
+                      onDoubleClick={() => setSelectedSale(sale)}
+                      onTouchEnd={(e) => handleSaleTap(sale, e)}
+                    >
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={(e) => toggleSelection(sale.id, e)}
+                          className="p-1 rounded hover:bg-surface-hover"
+                        >
+                          {selectedItems.has(sale.id) ? (
+                            <CheckSquare className="w-5 h-5 text-primary" />
+                          ) : (
+                            <Square className="w-5 h-5 text-text-muted" />
+                          )}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-text-primary">
+                        {sale.client?.full_name}
+                      </td>
+                      <td className="px-4 py-3 text-text-secondary">
+                        {sale.product?.name || sale.clothing?.name}
+                      </td>
+                      <td className="px-4 py-3 text-text-secondary">
+                        {sale.quantity}
+                      </td>
+                      <td className="px-4 py-3 text-text-secondary">
+                        {formatCurrency(sale.unit_price)}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-primary">
+                        {formatCurrency(sale.total_price)}
+                      </td>
+                      <td className="px-4 py-3 text-text-secondary">
+                        {formatDate(sale.sale_date, i18n.language)}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -372,7 +393,9 @@ export default function Sales() {
         onClose={() => setDeletingSale(null)}
         onConfirm={() => deleteMutation.mutate(deletingSale.id)}
         title={t("common.confirmDelete")}
-        message={`${deletingSale?.client?.full_name} - ${deletingSale?.product?.name || deletingSale?.clothing?.name}`}
+        message={`${deletingSale?.client?.full_name} - ${
+          deletingSale?.product?.name || deletingSale?.clothing?.name
+        }`}
         loading={deleteMutation.isPending}
       />
 
