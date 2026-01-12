@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useQuery } from '@tanstack/react-query'
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import {
   BarChart,
   Bar,
@@ -12,116 +12,139 @@ import {
   PieChart,
   Pie,
   Cell,
-} from 'recharts'
-import { Download, FileSpreadsheet } from 'lucide-react'
-import { reportsAPI, exportAPI } from '../services/api'
-import { formatCurrency, downloadFile } from '../lib/utils'
+} from "recharts";
+import { Download } from "lucide-react";
+import { reportsAPI, exportAPI } from "../services/api";
+import { formatCurrency, downloadFile } from "../lib/utils";
 
-const COLORS = ['#B76E79', '#D4AF37', '#6366F1', '#10B981', '#F59E0B']
+const COLORS = [
+  "#B76E79",
+  "#D4AF37",
+  "#EF4444",
+  "#6366F1",
+  "#10B981",
+  "#F59E0B",
+];
 
 export default function Reports() {
-  const { t, i18n } = useTranslation()
-  const [period, setPeriod] = useState('monthly')
+  const { t, i18n } = useTranslation();
+  const [period, setPeriod] = useState("monthly");
   const [dateRange, setDateRange] = useState({
-    start: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-    end: new Date().toISOString().split('T')[0],
-  })
+    start: new Date(new Date().getFullYear(), 0, 1).toISOString().split("T")[0],
+    end: new Date().toISOString().split("T")[0],
+  });
 
   const { data: earnings, isLoading: earningsLoading } = useQuery({
-    queryKey: ['earnings', dateRange, period],
-    queryFn: () => reportsAPI.getEarnings({
-      start_date: dateRange.start,
-      end_date: dateRange.end,
-      period,
-    }),
-  })
+    queryKey: ["earnings", dateRange, period],
+    queryFn: () =>
+      reportsAPI.getEarnings({
+        start_date: dateRange.start,
+        end_date: dateRange.end,
+        period,
+      }),
+  });
 
   const { data: topDresses } = useQuery({
-    queryKey: ['top-dresses', dateRange],
-    queryFn: () => reportsAPI.getTopDresses({
-      start_date: dateRange.start,
-      end_date: dateRange.end,
-      limit: 5,
-    }),
-  })
+    queryKey: ["top-dresses", dateRange],
+    queryFn: () =>
+      reportsAPI.getTopDresses({
+        start_date: dateRange.start,
+        end_date: dateRange.end,
+        limit: 5,
+      }),
+  });
 
   const { data: topClients } = useQuery({
-    queryKey: ['top-clients', dateRange],
-    queryFn: () => reportsAPI.getTopClients({
-      start_date: dateRange.start,
-      end_date: dateRange.end,
-      limit: 5,
-    }),
-  })
+    queryKey: ["top-clients", dateRange],
+    queryFn: () =>
+      reportsAPI.getTopClients({
+        start_date: dateRange.start,
+        end_date: dateRange.end,
+        limit: 5,
+      }),
+  });
 
   const handleExport = async (type: string) => {
     try {
-      let blob
-      let filename
-      
+      let blob;
+      let filename;
+
       switch (type) {
-        case 'clients':
-          blob = await exportAPI.exportClients()
-          filename = 'clients.xlsx'
-          break
-        case 'dresses':
-          blob = await exportAPI.exportDresses()
-          filename = 'dresses.xlsx'
-          break
-        case 'clothing':
-          blob = await exportAPI.exportClothing()
-          filename = 'clothing.xlsx'
-          break
-        case 'bookings':
-          blob = await exportAPI.exportBookings({ start_date: dateRange.start, end_date: dateRange.end })
-          filename = 'bookings.xlsx'
-          break
-        case 'sales':
-          blob = await exportAPI.exportSales({ start_date: dateRange.start, end_date: dateRange.end })
-          filename = 'sales.xlsx'
-          break
-        case 'commercial':
-          blob = await exportAPI.exportCommercialReport({ 
-            start_date: dateRange.start, 
+        case "clients":
+          blob = await exportAPI.exportClients();
+          filename = "clients.xlsx";
+          break;
+        case "dresses":
+          blob = await exportAPI.exportDresses();
+          filename = "dresses.xlsx";
+          break;
+        case "clothing":
+          blob = await exportAPI.exportClothing();
+          filename = "clothing.xlsx";
+          break;
+        case "bookings":
+          blob = await exportAPI.exportBookings({
+            start_date: dateRange.start,
             end_date: dateRange.end,
-            lang: i18n.language 
-          })
-          filename = `commercial_report_${new Date().toISOString().split('T')[0]}.xlsx`
-          break
+          });
+          filename = "bookings.xlsx";
+          break;
+        case "sales":
+          blob = await exportAPI.exportSales({
+            start_date: dateRange.start,
+            end_date: dateRange.end,
+          });
+          filename = "sales.xlsx";
+          break;
+        case "commercial":
+          blob = await exportAPI.exportCommercialReport({
+            start_date: dateRange.start,
+            end_date: dateRange.end,
+            lang: i18n.language,
+          });
+          filename = `commercial_report_${
+            new Date().toISOString().split("T")[0]
+          }.xlsx`;
+          break;
         default:
-          return
+          return;
       }
-      
-      downloadFile(blob, filename)
+
+      downloadFile(blob, filename);
     } catch (error) {
-      console.error('Export failed:', error)
+      console.error("Export failed:", error);
     }
-  }
+  };
 
   const revenueData = [
-    { name: t('dashboard.rentalRevenue'), value: earnings?.total_rentals || 0 },
-    { name: t('dashboard.salesRevenue'), value: earnings?.total_sales || 0 },
-  ]
+    { name: t("dashboard.rentalRevenue"), value: earnings?.total_rentals || 0 },
+    { name: t("dashboard.salesRevenue"), value: earnings?.total_sales || 0 },
+    { name: t("expenses.title"), value: earnings?.total_expenses || 0 },
+  ];
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-heading font-semibold text-text-primary">
-          {t('reports.title')}
+          {t("reports.title")}
         </h1>
-        
+
         <div className="flex flex-wrap gap-3">
           <input
             type="date"
             value={dateRange.start}
-            onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+            onChange={(e) =>
+              setDateRange({ ...dateRange, start: e.target.value })
+            }
             className="input-field w-auto"
           />
           <input
             type="date"
             value={dateRange.end}
-            onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+            onChange={(e) =>
+              setDateRange({ ...dateRange, end: e.target.value })
+            }
             className="input-field w-auto"
           />
           <select
@@ -129,41 +152,50 @@ export default function Reports() {
             onChange={(e) => setPeriod(e.target.value)}
             className="select-field w-auto"
           >
-            <option value="daily">{t('reports.daily')}</option>
-            <option value="weekly">{t('reports.weekly')}</option>
-            <option value="monthly">{t('reports.monthly')}</option>
-            <option value="yearly">{t('reports.yearly')}</option>
+            <option value="daily">{t("reports.daily")}</option>
+            <option value="weekly">{t("reports.weekly")}</option>
+            <option value="monthly">{t("reports.monthly")}</option>
+            <option value="yearly">{t("reports.yearly")}</option>
           </select>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-gradient-to-br from-primary to-primary-dark rounded-xl p-6 text-white">
-          <p className="text-sm opacity-80">{t('reports.totalRevenue')}</p>
+          <p className="text-sm opacity-80">{t("reports.totalRevenue")}</p>
           <p className="text-3xl font-heading font-bold mt-2">
             {formatCurrency(earnings?.total_revenue || 0)}
           </p>
         </div>
         <div className="bg-gradient-to-br from-success to-emerald-600 rounded-xl p-6 text-white">
-          <p className="text-sm opacity-80">{t('reports.totalProfit')}</p>
+          <p className="text-sm opacity-80">{t("reports.netProfit")}</p>
           <p className="text-3xl font-heading font-bold mt-2">
-            {formatCurrency(earnings?.total_profit || 0)}
+            {formatCurrency(earnings?.net_profit || 0)}
           </p>
         </div>
         <div className="bg-surface rounded-xl p-6 border border-border">
-          <p className="text-sm text-text-muted">{t('reports.totalRentals')}</p>
+          <p className="text-sm text-text-muted">{t("reports.totalRentals")}</p>
           <p className="text-3xl font-heading font-bold text-primary mt-2">
             {formatCurrency(earnings?.total_rentals || 0)}
           </p>
         </div>
         <div className="bg-surface rounded-xl p-6 border border-border">
-          <p className="text-sm text-text-muted">{t('reports.totalSales')}</p>
+          <p className="text-sm text-text-muted">{t("reports.totalSales")}</p>
           <p className="text-3xl font-heading font-bold text-accent mt-2">
             {formatCurrency(earnings?.total_sales || 0)}
           </p>
           <p className="text-xs text-text-muted mt-1">
-            {t('reports.profit')}: {formatCurrency(earnings?.total_sales_profit || 0)}
+            {t("reports.profit")}:{" "}
+            {formatCurrency(earnings?.total_sales_profit || 0)}
+          </p>
+        </div>
+        <div className="bg-surface rounded-xl p-6 border border-border">
+          <p className="text-sm text-text-muted">
+            {t("reports.totalExpenses")}
+          </p>
+          <p className="text-3xl font-heading font-bold text-error mt-2">
+            {formatCurrency(earnings?.total_expenses || 0)}
           </p>
         </div>
       </div>
@@ -173,7 +205,7 @@ export default function Reports() {
         {/* Revenue Over Time */}
         <div className="bg-surface rounded-xl p-6 border border-border">
           <h3 className="text-lg font-semibold text-text-primary mb-4">
-            {t('reports.earnings')}
+            {t("reports.earnings")}
           </h3>
           {earningsLoading ? (
             <div className="h-64 flex items-center justify-center">
@@ -187,14 +219,30 @@ export default function Reports() {
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#FFFFFF',
-                    border: '1px solid #E8D5D8',
-                    borderRadius: '8px',
+                    backgroundColor: "#FFFFFF",
+                    border: "1px solid #E8D5D8",
+                    borderRadius: "8px",
                   }}
                   formatter={(value) => formatCurrency(Number(value))}
                 />
-                <Bar dataKey="rentals" name={t('dashboard.rentalRevenue')} fill="#B76E79" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="sales" name={t('dashboard.salesRevenue')} fill="#D4AF37" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="rentals"
+                  name={t("dashboard.rentalRevenue")}
+                  fill="#B76E79"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="sales"
+                  name={t("dashboard.salesRevenue")}
+                  fill="#D4AF37"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="expenses"
+                  name={t("expenses.title")}
+                  fill="#EF4444"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -203,7 +251,7 @@ export default function Reports() {
         {/* Revenue Breakdown */}
         <div className="bg-surface rounded-xl p-6 border border-border">
           <h3 className="text-lg font-semibold text-text-primary mb-4">
-            {t('reports.revenueBreakdown')}
+            {t("reports.revenueBreakdown")}
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -215,10 +263,15 @@ export default function Reports() {
                 outerRadius={100}
                 paddingAngle={5}
                 dataKey="value"
-                label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                label={({ name, percent }) =>
+                  `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                }
               >
                 {revenueData.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Tooltip formatter={(value) => formatCurrency(Number(value))} />
@@ -232,7 +285,7 @@ export default function Reports() {
         {/* Top Dresses */}
         <div className="bg-surface rounded-xl p-6 border border-border">
           <h3 className="text-lg font-semibold text-text-primary mb-4">
-            {t('reports.topDresses')}
+            {t("reports.topDresses")}
           </h3>
           <div className="space-y-3">
             {topDresses?.dresses?.map((dress: any, index: number) => (
@@ -241,9 +294,11 @@ export default function Reports() {
                   {index + 1}
                 </span>
                 <div className="flex-1">
-                  <p className="font-medium text-text-primary">{dress.dress_name}</p>
+                  <p className="font-medium text-text-primary">
+                    {dress.dress_name}
+                  </p>
                   <p className="text-sm text-text-muted">
-                    {dress.rental_count} {t('nav.bookings').toLowerCase()}
+                    {dress.rental_count} {t("nav.bookings").toLowerCase()}
                   </p>
                 </div>
                 <span className="font-semibold text-primary">
@@ -252,7 +307,9 @@ export default function Reports() {
               </div>
             ))}
             {(!topDresses?.dresses || topDresses.dresses.length === 0) && (
-              <p className="text-center text-text-muted py-4">{t('common.noData')}</p>
+              <p className="text-center text-text-muted py-4">
+                {t("common.noData")}
+              </p>
             )}
           </div>
         </div>
@@ -260,7 +317,7 @@ export default function Reports() {
         {/* Top Clients */}
         <div className="bg-surface rounded-xl p-6 border border-border">
           <h3 className="text-lg font-semibold text-text-primary mb-4">
-            {t('reports.topClients')}
+            {t("reports.topClients")}
           </h3>
           <div className="space-y-3">
             {topClients?.clients?.map((client: any, index: number) => (
@@ -269,9 +326,12 @@ export default function Reports() {
                   {index + 1}
                 </span>
                 <div className="flex-1">
-                  <p className="font-medium text-text-primary">{client.client_name}</p>
+                  <p className="font-medium text-text-primary">
+                    {client.client_name}
+                  </p>
                   <p className="text-sm text-text-muted">
-                    {client.booking_count} {t('reports.bookingsCount')} • {client.sale_count} {t('reports.purchasesCount')}
+                    {client.booking_count} {t("reports.bookingsCount")} •{" "}
+                    {client.sale_count} {t("reports.purchasesCount")}
                   </p>
                 </div>
                 <span className="font-semibold text-accent">
@@ -280,7 +340,9 @@ export default function Reports() {
               </div>
             ))}
             {(!topClients?.clients || topClients.clients.length === 0) && (
-              <p className="text-center text-text-muted py-4">{t('common.noData')}</p>
+              <p className="text-center text-text-muted py-4">
+                {t("common.noData")}
+              </p>
             )}
           </div>
         </div>
@@ -291,17 +353,16 @@ export default function Reports() {
       <div className="bg-surface rounded-xl p-6 border border-border">
         <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
           <Download className="w-5 h-5" />
-          {t('export.export')}
+          {t("export.export")}
         </h3>
         <button
-          onClick={() => handleExport('commercial')}
+          onClick={() => handleExport("commercial")}
           className="btn-primary flex items-center justify-center gap-2"
         >
           <Download className="w-4 h-4" />
-          {t('export.exportCommercialReport')}
+          {t("export.exportCommercialReport")}
         </button>
       </div>
     </div>
-  )
+  );
 }
-

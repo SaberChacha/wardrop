@@ -10,6 +10,7 @@ from ..models.sale import Sale
 from ..models.dress import Dress
 from ..models.clothing import Clothing
 from ..models.client import Client
+from ..models.expense import Expense
 from ..schemas.reports import (
     DashboardStats, 
     EarningsReport, 
@@ -84,6 +85,14 @@ async def get_dashboard_stats(
         Booking.booking_status == "in_progress"
     ).count()
     
+    # Monthly expenses
+    monthly_expenses = db.query(func.sum(Expense.amount)).filter(
+        Expense.date >= start_of_month
+    ).scalar() or 0
+    
+    # Calculate net profit (rental revenue + sales profit - expenses)
+    monthly_net_profit = float(monthly_rental_revenue) + monthly_sales_profit - float(monthly_expenses)
+    
     return {
         "total_clients": total_clients,
         "total_dresses": total_dresses,
@@ -94,6 +103,8 @@ async def get_dashboard_stats(
         "monthly_total_revenue": float(monthly_rental_revenue + monthly_sales_revenue),
         "monthly_sales_cost": float(monthly_sales_with_cost),
         "monthly_sales_profit": monthly_sales_profit,
+        "monthly_expenses": float(monthly_expenses),
+        "monthly_net_profit": monthly_net_profit,
         "pending_deposits": float(pending_deposits),
         "low_stock_count": low_stock_count,
         "upcoming_returns": upcoming_returns
@@ -136,20 +147,35 @@ async def get_earnings_report(
         Sale.sale_date <= end_date
     ).group_by("period").all()
     
+    # Get expenses by period
+    expenses_query = db.query(
+        func.date_trunc(period if period != "daily" else "day", Expense.date).label("period"),
+        func.sum(Expense.amount).label("amount")
+    ).filter(
+        Expense.date >= start_date,
+        Expense.date <= end_date
+    ).group_by("period").all()
+    
     # Combine into periods
     periods_data = {}
     for row in rental_query:
         period_key = row.period.strftime("%Y-%m-%d") if row.period else "Unknown"
         if period_key not in periods_data:
-            periods_data[period_key] = {"rentals": 0, "sales": 0, "sales_cost": 0}
+            periods_data[period_key] = {"rentals": 0, "sales": 0, "sales_cost": 0, "expenses": 0}
         periods_data[period_key]["rentals"] = float(row.amount or 0)
     
     for row in sales_query:
         period_key = row.period.strftime("%Y-%m-%d") if row.period else "Unknown"
         if period_key not in periods_data:
-            periods_data[period_key] = {"rentals": 0, "sales": 0, "sales_cost": 0}
+            periods_data[period_key] = {"rentals": 0, "sales": 0, "sales_cost": 0, "expenses": 0}
         periods_data[period_key]["sales"] = float(row.amount or 0)
         periods_data[period_key]["sales_cost"] = float(row.cost or 0)
+    
+    for row in expenses_query:
+        period_key = row.period.strftime("%Y-%m-%d") if row.period else "Unknown"
+        if period_key not in periods_data:
+            periods_data[period_key] = {"rentals": 0, "sales": 0, "sales_cost": 0, "expenses": 0}
+        periods_data[period_key]["expenses"] = float(row.amount or 0)
     
     # Format response
     monthly_earnings = [
@@ -159,7 +185,9 @@ async def get_earnings_report(
             "sales": v["sales"],
             "sales_cost": v["sales_cost"],
             "sales_profit": v["sales"] - v["sales_cost"],
-            "total": v["rentals"] + v["sales"]
+            "expenses": v["expenses"],
+            "total": v["rentals"] + v["sales"],
+            "net_profit": v["rentals"] + (v["sales"] - v["sales_cost"]) - v["expenses"]
         }
         for k, v in sorted(periods_data.items())
     ]
@@ -168,6 +196,7 @@ async def get_earnings_report(
     total_sales = sum(e["sales"] for e in monthly_earnings)
     total_sales_cost = sum(e["sales_cost"] for e in monthly_earnings)
     total_sales_profit = total_sales - total_sales_cost
+    total_expenses = sum(e["expenses"] for e in monthly_earnings)
     
     return {
         "start_date": start_date,
@@ -177,8 +206,10 @@ async def get_earnings_report(
         "total_sales": total_sales,
         "total_sales_cost": total_sales_cost,
         "total_sales_profit": total_sales_profit,
+        "total_expenses": total_expenses,
         "total_revenue": total_rentals + total_sales,
         "total_profit": total_rentals + total_sales_profit,
+        "net_profit": total_rentals + total_sales_profit - total_expenses,
         "earnings_by_period": monthly_earnings
     }
 

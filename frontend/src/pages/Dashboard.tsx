@@ -10,6 +10,8 @@ import {
   AlertTriangle,
   DollarSign,
   Wallet,
+  TrendingDown,
+  PiggyBank,
 } from 'lucide-react'
 import { reportsAPI } from '../services/api'
 import { formatCurrency } from '../lib/utils'
@@ -59,18 +61,20 @@ export default function Dashboard() {
       color: 'text-success',
     },
     {
-      title: t('dashboard.salesRevenue'),
-      value: formatCurrency(stats?.monthly_sales_revenue || 0),
-      icon: DollarSign,
-      color: 'text-info',
-    },
-    {
       title: t('dashboard.salesProfit'),
       value: formatCurrency(stats?.monthly_sales_profit || 0),
       icon: Wallet,
       color: 'text-success',
     },
+    {
+      title: t('dashboard.monthlyExpenses'),
+      value: formatCurrency(stats?.monthly_expenses || 0),
+      icon: TrendingDown,
+      color: 'text-error',
+    },
   ]
+
+  const netProfit = stats?.monthly_net_profit || 0
 
   // Alert cards - filter out financial info for staff
   const alertCards = [
@@ -140,12 +144,25 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Monthly Revenue Card */}
         <div className="lg:col-span-2 bg-gradient-to-br from-primary to-primary-dark rounded-xl p-6 text-white">
-          <h3 className="text-lg font-medium opacity-90 mb-4">
-            {t('dashboard.monthlyRevenue')}
-          </h3>
-          <p className="text-4xl font-heading font-bold mb-6">
-            {formatCurrency(stats?.monthly_total_revenue || 0)}
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-medium opacity-90">
+                {t('dashboard.monthlyRevenue')}
+              </h3>
+              <p className="text-4xl font-heading font-bold mt-2">
+                {formatCurrency(stats?.monthly_total_revenue || 0)}
+              </p>
+            </div>
+            <div className="text-end">
+              <div className="flex items-center gap-2 justify-end">
+                <PiggyBank className="w-5 h-5 opacity-80" />
+                <span className="text-sm opacity-80">{t('dashboard.netProfit')}</span>
+              </div>
+              <p className={`text-2xl font-bold mt-1 ${netProfit >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                {formatCurrency(netProfit)}
+              </p>
+            </div>
+          </div>
           
           <div className="grid grid-cols-3 gap-4">
             {revenueCards.map((card) => (

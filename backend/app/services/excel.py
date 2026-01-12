@@ -10,6 +10,7 @@ from ..models.dress import Dress
 from ..models.clothing import Clothing
 from ..models.booking import Booking
 from ..models.sale import Sale
+from ..models.expense import Expense
 
 # Translation dictionaries for Excel exports
 TRANSLATIONS = {
@@ -22,10 +23,14 @@ TRANSLATIONS = {
         "total_rental_revenue": "إجمالي إيرادات التأجير (د.ج)",
         "total_sales_revenue": "إجمالي إيرادات المبيعات (د.ج)",
         "total_revenue": "إجمالي الإيرادات (د.ج)",
+        "total_expenses": "إجمالي المصاريف (د.ج)",
+        "net_profit": "صافي الربح (د.ج)",
         "number_of_bookings": "عدد الحجوزات",
         "number_of_sales": "عدد المبيعات",
+        "number_of_expenses": "عدد المصاريف",
         "bookings": "الحجوزات",
         "sales": "المبيعات",
+        "expenses": "المصاريف",
         "client": "العميل",
         "dress": "الفستان",
         "item": "المنتج",
@@ -38,6 +43,8 @@ TRANSLATIONS = {
         "unit_price": "سعر الوحدة (د.ج)",
         "total": "الإجمالي (د.ج)",
         "date": "التاريخ",
+        "reason": "السبب",
+        "amount": "المبلغ (د.ج)",
     },
     "fr": {
         "summary": "Résumé",
@@ -48,10 +55,14 @@ TRANSLATIONS = {
         "total_rental_revenue": "Total Revenus Location (DZD)",
         "total_sales_revenue": "Total Revenus Ventes (DZD)",
         "total_revenue": "Total Revenus (DZD)",
+        "total_expenses": "Total Dépenses (DZD)",
+        "net_profit": "Bénéfice Net (DZD)",
         "number_of_bookings": "Nombre de Réservations",
         "number_of_sales": "Nombre de Ventes",
+        "number_of_expenses": "Nombre de Dépenses",
         "bookings": "Réservations",
         "sales": "Ventes",
+        "expenses": "Dépenses",
         "client": "Client",
         "dress": "Robe",
         "item": "Article",
@@ -64,6 +75,8 @@ TRANSLATIONS = {
         "unit_price": "Prix Unitaire (DZD)",
         "total": "Total (DZD)",
         "date": "Date",
+        "reason": "Motif",
+        "amount": "Montant (DZD)",
     }
 }
 
@@ -290,6 +303,11 @@ class ExcelService:
             Sale.sale_date <= end_date
         ).scalar() or 0
         
+        expenses_total = self.db.query(func.sum(Expense.amount)).filter(
+            Expense.date >= start_date,
+            Expense.date <= end_date
+        ).scalar() or 0
+        
         booking_count = self.db.query(Booking).filter(
             Booking.start_date >= start_date,
             Booking.start_date <= end_date,
@@ -301,6 +319,14 @@ class ExcelService:
             Sale.sale_date <= end_date
         ).count()
         
+        expenses_count = self.db.query(Expense).filter(
+            Expense.date >= start_date,
+            Expense.date <= end_date
+        ).count()
+        
+        total_revenue = float(rental_total + sales_total)
+        net_profit = total_revenue - float(expenses_total)
+        
         ws_summary.append([t["commercial_report"]])
         ws_summary.append([f"{t['period']}: {start_date} - {end_date}"])
         ws_summary.append([])
@@ -308,9 +334,12 @@ class ExcelService:
         self._style_header(ws_summary, 4)
         ws_summary.append([t["total_rental_revenue"], float(rental_total)])
         ws_summary.append([t["total_sales_revenue"], float(sales_total)])
-        ws_summary.append([t["total_revenue"], float(rental_total + sales_total)])
+        ws_summary.append([t["total_revenue"], total_revenue])
+        ws_summary.append([t["total_expenses"], float(expenses_total)])
+        ws_summary.append([t["net_profit"], net_profit])
         ws_summary.append([t["number_of_bookings"], booking_count])
         ws_summary.append([t["number_of_sales"], sales_count])
+        ws_summary.append([t["number_of_expenses"], expenses_count])
         
         self._auto_width(ws_summary)
         
@@ -360,6 +389,26 @@ class ExcelService:
             ])
         
         self._auto_width(ws_sales)
+        
+        # Expenses Sheet
+        ws_expenses = wb.create_sheet(t["expenses"])
+        headers = [t["date"], t["reason"], t["amount"]]
+        ws_expenses.append(headers)
+        self._style_header(ws_expenses)
+        
+        expenses = self.db.query(Expense).filter(
+            Expense.date >= start_date,
+            Expense.date <= end_date
+        ).order_by(Expense.date.desc()).all()
+        
+        for expense in expenses:
+            ws_expenses.append([
+                expense.date.strftime("%Y-%m-%d"),
+                expense.reason,
+                float(expense.amount)
+            ])
+        
+        self._auto_width(ws_expenses)
         
         output = BytesIO()
         wb.save(output)

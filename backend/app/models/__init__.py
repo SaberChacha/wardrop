@@ -9,6 +9,7 @@ from .settings import Settings
 from .category import Category
 from .size import Size
 from .product import Product, ProductImage, ProductType
+from .expense import Expense
 
 __all__ = [
     "Admin",
@@ -26,5 +27,6 @@ __all__ = [
     "Product",
     "ProductImage",
     "ProductType",
+    "Expense",
 ]
 

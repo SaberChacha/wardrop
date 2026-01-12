@@ -13,6 +13,8 @@ class DashboardStats(BaseModel):
     monthly_total_revenue: float
     monthly_sales_cost: float
     monthly_sales_profit: float
+    monthly_expenses: float
+    monthly_net_profit: float
     pending_deposits: float
     low_stock_count: int
     upcoming_returns: int
@@ -24,7 +26,9 @@ class MonthlyEarnings(BaseModel):
     sales: float
     sales_cost: float
     sales_profit: float
+    expenses: float
     total: float
+    net_profit: float
 
 
 class EarningsReport(BaseModel):
@@ -35,8 +39,10 @@ class EarningsReport(BaseModel):
     total_sales: float
     total_sales_cost: float
     total_sales_profit: float
+    total_expenses: float
     total_revenue: float
     total_profit: float
+    net_profit: float
     earnings_by_period: List[MonthlyEarnings]
 
 

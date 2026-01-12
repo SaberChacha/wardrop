@@ -9,7 +9,7 @@ from .config import get_settings
 from .database import engine, Base
 from .routers import auth, clients, dresses, clothing, bookings, sales, reports, export, notifications, users
 from .routers import settings as settings_router
-from .routers import products, categories, sizes
+from .routers import products, categories, sizes, expenses
 from .services.scheduler import start_scheduler, stop_scheduler
 
 settings = get_settings()
@@ -89,6 +89,7 @@ app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 app.include_router(export.router, prefix="/api/export", tags=["Export/Import"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
 app.include_router(settings_router.router, prefix="/api/settings", tags=["Settings"])
+app.include_router(expenses.router, prefix="/api/expenses", tags=["Expenses"])
 
 
 @app.get("/")

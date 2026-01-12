@@ -389,6 +389,62 @@ export const salesAPI = {
   },
 };
 
+// Expenses
+export const expensesAPI = {
+  getAll: async (params?: {
+    skip?: number;
+    limit?: number;
+    start_date?: string;
+    end_date?: string;
+    sort_by?: string;
+    sort_order?: "asc" | "desc";
+  }) => {
+    const response = await api.get("/expenses/", { params });
+    return response.data;
+  },
+  getById: async (id: number) => {
+    const response = await api.get(`/expenses/${id}`);
+    return response.data;
+  },
+  getSummary: async (params?: {
+    start_date?: string;
+    end_date?: string;
+    period?: string;
+  }) => {
+    const response = await api.get("/expenses/summary", { params });
+    return response.data;
+  },
+  create: async (data: {
+    amount: number;
+    date: string;
+    reason: string;
+    notes?: string;
+  }) => {
+    const response = await api.post("/expenses/", data);
+    return response.data;
+  },
+  update: async (
+    id: number,
+    data: {
+      amount?: number;
+      date?: string;
+      reason?: string;
+      notes?: string;
+    }
+  ) => {
+    const response = await api.put(`/expenses/${id}`, data);
+    return response.data;
+  },
+  delete: async (id: number) => {
+    const response = await api.delete(`/expenses/${id}`);
+    return response.data;
+  },
+  bulkDelete: async (ids: number[]) => {
+    const response = await api.post("/expenses/bulk-delete", ids);
+    return response.data;
+  },
+};
+
 // Reports
 export const reportsAPI = {
   getDashboard: async () => {
