@@ -10,6 +10,7 @@ import Modal from '../components/ui/Modal'
 import ImageSlideshow from '../components/ui/ImageSlideshow'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import BookingForm from '../components/forms/BookingForm'
+import Autocomplete from '../components/ui/Autocomplete'
 import { formatDate } from '../lib/utils'
 
 export default function Calendar() {
@@ -111,18 +112,15 @@ export default function Calendar() {
           {t('calendar.title')}
         </h1>
         
-        <select
-          value={selectedProduct || ''}
-          onChange={(e) => setSelectedProduct(e.target.value ? Number(e.target.value) : null)}
-          className="select-field w-auto min-w-[200px]"
-        >
-          <option value="">{t('calendar.allProducts')}</option>
-          {products?.products?.map((product: any) => (
-            <option key={product.id} value={product.id}>
-              {product.name}
-            </option>
-          ))}
-        </select>
+        <div className="w-full sm:w-auto sm:min-w-[250px]">
+          <Autocomplete
+            options={products?.products || []}
+            value={selectedProduct}
+            onChange={(value) => setSelectedProduct(value as number | null)}
+            displayField="name"
+            placeholder={t('calendar.allProducts')}
+          />
+        </div>
       </div>
 
       {/* Calendar */}
