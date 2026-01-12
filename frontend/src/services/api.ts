@@ -215,11 +215,15 @@ export const productsAPI = {
     return response.data;
   },
   deleteImage: async (productId: number, imageId: number) => {
-    const response = await api.delete(`/products/${productId}/images/${imageId}`);
+    const response = await api.delete(
+      `/products/${productId}/images/${imageId}`
+    );
     return response.data;
   },
   setPrimaryImage: async (productId: number, imageId: number) => {
-    const response = await api.put(`/products/${productId}/images/${imageId}/primary`);
+    const response = await api.put(
+      `/products/${productId}/images/${imageId}/primary`
+    );
     return response.data;
   },
   delete: async (id: number) => {
@@ -316,9 +320,9 @@ export const bookingsAPI = {
     const response = await api.get("/bookings", { params });
     return response.data;
   },
-  getCalendar: async (start: string, end: string, dress_id?: number) => {
+  getCalendar: async (start: string, end: string, product_id?: number) => {
     const response = await api.get("/bookings/calendar", {
-      params: { start, end, dress_id },
+      params: { start, end, product_id },
     });
     return response.data;
   },

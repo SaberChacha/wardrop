@@ -180,7 +180,9 @@
   "calendar": {
     "title": "Calendrier",
     "allDresses": "Toutes les robes",
-    "filterByDress": "Filtrer par robe"
+    "allProducts": "Tous les produits",
+    "filterByDress": "Filtrer par robe",
+    "filterByProduct": "Filtrer par produit"
   },
   "reports": {
     "title": "Rapports",
@@ -229,6 +231,7 @@
     "loading": "Chargement...",
     "noData": "Aucune donnée",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer?",
+    "confirmBulkDelete": "Êtes-vous sûr de vouloir supprimer {{count}} éléments?",
     "success": "Succès",
     "error": "Erreur",
     "currency": "DZD",
@@ -312,4 +315,3 @@
     "currency": "Devise"
   }
 }
-

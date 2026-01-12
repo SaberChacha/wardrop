@@ -180,7 +180,9 @@
   "calendar": {
     "title": "التقويم",
     "allDresses": "جميع الفساتين",
-    "filterByDress": "تصفية حسب الفستان"
+    "allProducts": "جميع المنتجات",
+    "filterByDress": "تصفية حسب الفستان",
+    "filterByProduct": "تصفية حسب المنتج"
   },
   "reports": {
     "title": "التقارير",
@@ -229,6 +231,7 @@
     "loading": "جاري التحميل...",
     "noData": "لا توجد بيانات",
     "confirmDelete": "هل أنت متأكد من الحذف؟",
+    "confirmBulkDelete": "هل أنت متأكد من حذف {{count}} عناصر؟",
     "success": "نجاح",
     "error": "خطأ",
     "currency": "د.ج",
@@ -312,4 +315,3 @@
     "currency": "العملة"
   }
 }
-

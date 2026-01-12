@@ -4,31 +4,32 @@ import { useQuery } from '@tanstack/react-query'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import { bookingsAPI, dressesAPI } from '../services/api'
+import { bookingsAPI, productsAPI } from '../services/api'
 import Modal from '../components/ui/Modal'
 import ImageSlideshow from '../components/ui/ImageSlideshow'
-import { formatCurrency, formatDate } from '../lib/utils'
+import { formatDate } from '../lib/utils'
 
 export default function Calendar() {
   const { t, i18n } = useTranslation()
-  const [selectedDress, setSelectedDress] = useState<number | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<number | null>(null)
   const [selectedBooking, setSelectedBooking] = useState<any>(null)
   const [dateRange, setDateRange] = useState({
     start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
     end: new Date(new Date().getFullYear(), new Date().getMonth() + 2, 0).toISOString().split('T')[0],
   })
 
-  const { data: dresses } = useQuery({
-    queryKey: ['dresses-list'],
-    queryFn: () => dressesAPI.getAll({ limit: 100 }),
+  // Get rental products for the filter
+  const { data: products } = useQuery({
+    queryKey: ['products-rent-calendar'],
+    queryFn: () => productsAPI.getAll({ type: 'rent', limit: 500 }),
   })
 
   const { data: bookings, isLoading } = useQuery({
-    queryKey: ['calendar-bookings', dateRange.start, dateRange.end, selectedDress],
+    queryKey: ['calendar-bookings', dateRange.start, dateRange.end, selectedProduct],
     queryFn: () => bookingsAPI.getCalendar(
       dateRange.start,
       dateRange.end,
-      selectedDress || undefined
+      selectedProduct || undefined
     ),
   })
 
@@ -44,7 +45,7 @@ export default function Calendar() {
       extendedProps: {
         status: booking.status,
         clientName: booking.client_name,
-        dressName: booking.dress_name,
+        productName: booking.product_name || booking.dress_name,
       },
     }))
   }, [bookings])
@@ -72,14 +73,14 @@ export default function Calendar() {
         </h1>
         
         <select
-          value={selectedDress || ''}
-          onChange={(e) => setSelectedDress(e.target.value ? Number(e.target.value) : null)}
+          value={selectedProduct || ''}
+          onChange={(e) => setSelectedProduct(e.target.value ? Number(e.target.value) : null)}
           className="select-field w-auto min-w-[200px]"
         >
-          <option value="">{t('calendar.allDresses')}</option>
-          {dresses?.dresses?.map((dress: any) => (
-            <option key={dress.id} value={dress.id}>
-              {dress.name}
+          <option value="">{t('calendar.allProducts')}</option>
+          {products?.products?.map((product: any) => (
+            <option key={product.id} value={product.id}>
+              {product.name}
             </option>
           ))}
         </select>
@@ -124,11 +125,15 @@ export default function Calendar() {
       >
         {selectedBooking && (
           <div className="space-y-4">
-            {/* Dress Images */}
+            {/* Product/Dress Images - prefer product images, fall back to dress images */}
             <div className="w-full max-w-xs mx-auto rounded-lg overflow-hidden">
               <ImageSlideshow
-                images={selectedBooking.dress_images || []}
-                alt={selectedBooking.dress_name}
+                images={
+                  (selectedBooking.product_images?.length > 0 
+                    ? selectedBooking.product_images 
+                    : selectedBooking.dress_images) || []
+                }
+                alt={selectedBooking.product_name || selectedBooking.dress_name}
                 aspectRatio="square"
               />
             </div>
@@ -139,8 +144,8 @@ export default function Calendar() {
                 <p className="font-medium">{selectedBooking.client_name}</p>
               </div>
               <div>
-                <p className="text-sm text-text-muted">{t('bookings.dress')}</p>
-                <p className="font-medium">{selectedBooking.dress_name}</p>
+                <p className="text-sm text-text-muted">{t('bookings.product')}</p>
+                <p className="font-medium">{selectedBooking.product_name || selectedBooking.dress_name}</p>
               </div>
               <div>
                 <p className="text-sm text-text-muted">{t('bookings.startDate')}</p>
