@@ -1,18 +1,25 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
+import { Edit2, Trash2 } from 'lucide-react'
 import { bookingsAPI, productsAPI } from '../services/api'
 import Modal from '../components/ui/Modal'
 import ImageSlideshow from '../components/ui/ImageSlideshow'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
+import BookingForm from '../components/forms/BookingForm'
 import { formatDate } from '../lib/utils'
 
 export default function Calendar() {
   const { t, i18n } = useTranslation()
+  const queryClient = useQueryClient()
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null)
   const [selectedBooking, setSelectedBooking] = useState<any>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+  const [bookingToEdit, setBookingToEdit] = useState<any>(null)
   const [dateRange, setDateRange] = useState({
     start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
     end: new Date(new Date().getFullYear(), new Date().getMonth() + 2, 0).toISOString().split('T')[0],
@@ -31,6 +38,17 @@ export default function Calendar() {
       dateRange.end,
       selectedProduct || undefined
     ),
+  })
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => bookingsAPI.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendar-bookings'] })
+      queryClient.invalidateQueries({ queryKey: ['bookings'] })
+      setIsDeleteConfirmOpen(false)
+      setSelectedBooking(null)
+    },
   })
 
   const events = useMemo(() => {
@@ -55,6 +73,27 @@ export default function Calendar() {
     if (booking) {
       setSelectedBooking(booking)
     }
+  }
+
+  const handleEditClick = async () => {
+    if (selectedBooking) {
+      // Fetch full booking details for editing
+      const fullBooking = await bookingsAPI.getById(selectedBooking.id)
+      setBookingToEdit(fullBooking)
+      setSelectedBooking(null)
+      setIsEditModalOpen(true)
+    }
+  }
+
+  const handleDeleteClick = () => {
+    setIsDeleteConfirmOpen(true)
+  }
+
+  const handleEditSuccess = () => {
+    setIsEditModalOpen(false)
+    setBookingToEdit(null)
+    queryClient.invalidateQueries({ queryKey: ['calendar-bookings'] })
+    queryClient.invalidateQueries({ queryKey: ['bookings'] })
   }
 
   const handleDatesSet = (dateInfo: any) => {
@@ -161,7 +200,23 @@ export default function Calendar() {
               </div>
             </div>
             
-            <div className="pt-4 flex justify-end">
+            <div className="pt-4 flex justify-between">
+              <div className="flex gap-2">
+                <button
+                  onClick={handleEditClick}
+                  className="btn-secondary flex items-center gap-2"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  {t('common.edit')}
+                </button>
+                <button
+                  onClick={handleDeleteClick}
+                  className="btn-secondary text-error hover:bg-error/10 flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {t('common.delete')}
+                </button>
+              </div>
               <button
                 onClick={() => setSelectedBooking(null)}
                 className="btn-secondary"
@@ -172,6 +227,34 @@ export default function Calendar() {
           </div>
         )}
       </Modal>
+
+      {/* Edit Booking Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setBookingToEdit(null)
+        }}
+        title={t('bookings.editBooking')}
+        size="lg"
+      >
+        {bookingToEdit && (
+          <BookingForm
+            booking={bookingToEdit}
+            onSuccess={handleEditSuccess}
+          />
+        )}
+      </Modal>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={() => selectedBooking && deleteMutation.mutate(selectedBooking.id)}
+        title={t('common.confirmDelete')}
+        message={t('bookings.confirmDeleteBooking')}
+        loading={deleteMutation.isPending}
+      />
     </div>
   )
 }

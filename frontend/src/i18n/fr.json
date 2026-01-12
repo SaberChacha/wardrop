@@ -136,6 +136,7 @@
     "title": "Réservations",
     "addBooking": "Nouvelle réservation",
     "editBooking": "Modifier la réservation",
+    "confirmDeleteBooking": "Êtes-vous sûr de vouloir supprimer cette réservation?",
     "client": "Client",
     "dress": "Robe",
     "product": "Produit",

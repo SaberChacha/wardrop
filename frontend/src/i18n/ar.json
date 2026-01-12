@@ -136,6 +136,7 @@
     "title": "الحجوزات",
     "addBooking": "حجز جديد",
     "editBooking": "تعديل الحجز",
+    "confirmDeleteBooking": "هل أنت متأكد من حذف هذا الحجز؟",
     "client": "العميل",
     "dress": "الفستان",
     "product": "المنتج",
