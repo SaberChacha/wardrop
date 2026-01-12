@@ -157,10 +157,10 @@ export default function Expenses() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      const allIds = new Set(data?.expenses?.map((e: any) => e.id) || []);
+      const allIds = new Set<number>(data?.expenses?.map((e: any) => e.id) || []);
       setSelectedItems(allIds);
     } else {
-      setSelectedItems(new Set());
+      setSelectedItems(new Set<number>());
     }
   };
 
@@ -299,7 +299,7 @@ export default function Expenses() {
             options={sortOptions}
             sortBy={sortBy}
             sortOrder={sortOrder}
-            onSort={handleSort}
+            onSortChange={handleSort}
           />
         </div>
       </div>
