@@ -340,9 +340,25 @@
     "subtitle": "Gérer les paramètres de l'application",
     "logo": "Logo",
     "uploadLogo": "Télécharger le logo",
+    "currentLogo": "Logo actuel",
     "general": "Paramètres généraux",
     "brandName": "Nom de la marque",
     "language": "Langue",
-    "currency": "Devise"
+    "currency": "Devise",
+    "smsReminders": "Rappels SMS",
+    "twilioConfigured": "Twilio est configuré",
+    "twilioNotConfigured": "Twilio n'est pas configuré",
+    "twilioPhone": "Numéro Twilio",
+    "twilioSetupInstructions": "Ajoutez vos identifiants Twilio dans le fichier .env pour activer les SMS.",
+    "enableSmsReminders": "Activer les rappels SMS",
+    "enableSmsRemindersDesc": "Envoyer automatiquement des SMS de rappel avant les réservations",
+    "reminderTiming": "Quand envoyer le rappel",
+    "hours12Before": "12 heures avant",
+    "hours24Before": "24 heures avant (1 jour)",
+    "hours48Before": "48 heures avant (2 jours)",
+    "hours72Before": "72 heures avant (3 jours)",
+    "customMessage": "Message personnalisé (optionnel)",
+    "customMessagePlaceholder": "Laissez vide pour utiliser le message par défaut...",
+    "messagePlaceholders": "Variables disponibles: {client_name} = nom du client, {product_name} = nom du produit, {start_date} = date de début"
   }
 }

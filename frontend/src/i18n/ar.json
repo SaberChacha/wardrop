@@ -340,9 +340,25 @@
     "subtitle": "إدارة إعدادات التطبيق",
     "logo": "الشعار",
     "uploadLogo": "رفع الشعار",
+    "currentLogo": "الشعار الحالي",
     "general": "الإعدادات العامة",
     "brandName": "اسم العلامة التجارية",
     "language": "اللغة",
-    "currency": "العملة"
+    "currency": "العملة",
+    "smsReminders": "تذكيرات SMS",
+    "twilioConfigured": "Twilio مُعَدّ",
+    "twilioNotConfigured": "Twilio غير مُعَدّ",
+    "twilioPhone": "رقم Twilio",
+    "twilioSetupInstructions": "أضف بيانات Twilio في ملف .env لتفعيل الرسائل النصية.",
+    "enableSmsReminders": "تفعيل تذكيرات SMS",
+    "enableSmsRemindersDesc": "إرسال رسائل تذكير تلقائياً قبل الحجوزات",
+    "reminderTiming": "متى يتم إرسال التذكير",
+    "hours12Before": "12 ساعة قبل",
+    "hours24Before": "24 ساعة قبل (يوم واحد)",
+    "hours48Before": "48 ساعة قبل (يومان)",
+    "hours72Before": "72 ساعة قبل (3 أيام)",
+    "customMessage": "رسالة مخصصة (اختياري)",
+    "customMessagePlaceholder": "اتركه فارغاً لاستخدام الرسالة الافتراضية...",
+    "messagePlaceholders": "المتغيرات المتاحة: {client_name} = اسم العميل، {product_name} = اسم المنتج، {start_date} = تاريخ البداية"
   }
 }

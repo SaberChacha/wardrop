@@ -1,8 +1,10 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDropzone } from 'react-dropzone'
-import { Upload, Trash2, Save, Globe, Building2, Coins, Image } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { Upload, Trash2, Save, Globe, Building2, Coins, Image, MessageSquare, CheckCircle, XCircle, Info } from 'lucide-react'
 import { useSettings } from '../contexts/SettingsContext'
+import { settingsAPI } from '../services/api'
 
 // No API_URL needed for uploads - they're served at /uploads/ directly
 
@@ -15,9 +17,34 @@ export default function Settings() {
     brand_name: settings?.brand_name || 'Wardrop',
     currency: settings?.currency || 'DZD',
   })
+  
+  const [smsFormData, setSmsFormData] = useState({
+    sms_reminders_enabled: settings?.sms_reminders_enabled || false,
+    sms_reminder_hours: settings?.sms_reminder_hours || 24,
+    sms_reminder_message: settings?.sms_reminder_message || '',
+  })
+  
   const [saving, setSaving] = useState(false)
+  const [savingSms, setSavingSms] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [success, setSuccess] = useState(false)
+  
+  // Fetch Twilio configuration status
+  const { data: twilioStatus } = useQuery({
+    queryKey: ['twilio-status'],
+    queryFn: () => settingsAPI.getTwilioStatus(),
+  })
+  
+  // Update SMS form data when settings load
+  useEffect(() => {
+    if (settings) {
+      setSmsFormData({
+        sms_reminders_enabled: settings.sms_reminders_enabled || false,
+        sms_reminder_hours: settings.sms_reminder_hours || 24,
+        sms_reminder_message: settings.sms_reminder_message || '',
+      })
+    }
+  }, [settings])
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -67,6 +94,20 @@ export default function Settings() {
   const handleLanguageChange = (lang: string) => {
     setFormData({ ...formData, language: lang })
     i18n.changeLanguage(lang)
+  }
+
+  const handleSmsSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingSms(true)
+    try {
+      await updateSettings(smsFormData)
+      setSuccess(true)
+      setTimeout(() => setSuccess(false), 3000)
+    } catch (error) {
+      console.error('Failed to save SMS settings:', error)
+    } finally {
+      setSavingSms(false)
+    }
   }
 
   return (
@@ -227,6 +268,118 @@ export default function Settings() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* SMS Reminders Section */}
+      <div className="bg-surface rounded-xl p-6 border border-border">
+        <h2 className="text-lg font-semibold text-text-primary mb-6 flex items-center gap-2">
+          <MessageSquare className="w-5 h-5 text-primary" />
+          {t('settings.smsReminders')}
+        </h2>
+
+        {/* Twilio Status */}
+        <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
+          twilioStatus?.configured 
+            ? 'bg-success/10 border border-success/20' 
+            : 'bg-warning/10 border border-warning/20'
+        }`}>
+          {twilioStatus?.configured ? (
+            <CheckCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+          ) : (
+            <XCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+          )}
+          <div>
+            <p className={`font-medium ${twilioStatus?.configured ? 'text-success' : 'text-warning'}`}>
+              {twilioStatus?.configured 
+                ? t('settings.twilioConfigured') 
+                : t('settings.twilioNotConfigured')}
+            </p>
+            {twilioStatus?.configured ? (
+              <p className="text-sm text-text-secondary mt-1">
+                {t('settings.twilioPhone')}: {twilioStatus.phone_number}
+              </p>
+            ) : (
+              <p className="text-sm text-text-secondary mt-1">
+                {t('settings.twilioSetupInstructions')}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <form onSubmit={handleSmsSubmit} className="space-y-5">
+          {/* Enable/Disable Toggle */}
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="block text-sm font-medium text-text-primary">
+                {t('settings.enableSmsReminders')}
+              </label>
+              <p className="text-sm text-text-secondary mt-1">
+                {t('settings.enableSmsRemindersDesc')}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSmsFormData({ ...smsFormData, sms_reminders_enabled: !smsFormData.sms_reminders_enabled })}
+              disabled={!twilioStatus?.configured}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                smsFormData.sms_reminders_enabled ? 'bg-primary' : 'bg-gray-300'
+              } ${!twilioStatus?.configured ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  smsFormData.sms_reminders_enabled ? 'translate-x-5 rtl:-translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Reminder Timing */}
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2">
+              {t('settings.reminderTiming')}
+            </label>
+            <select
+              value={smsFormData.sms_reminder_hours}
+              onChange={(e) => setSmsFormData({ ...smsFormData, sms_reminder_hours: parseInt(e.target.value) })}
+              className="select-field"
+              disabled={!smsFormData.sms_reminders_enabled}
+            >
+              <option value="12">{t('settings.hours12Before')}</option>
+              <option value="24">{t('settings.hours24Before')}</option>
+              <option value="48">{t('settings.hours48Before')}</option>
+              <option value="72">{t('settings.hours72Before')}</option>
+            </select>
+          </div>
+
+          {/* Custom Message */}
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2">
+              {t('settings.customMessage')}
+            </label>
+            <textarea
+              value={smsFormData.sms_reminder_message}
+              onChange={(e) => setSmsFormData({ ...smsFormData, sms_reminder_message: e.target.value })}
+              className="input-field min-h-[100px] resize-none"
+              placeholder={t('settings.customMessagePlaceholder')}
+              disabled={!smsFormData.sms_reminders_enabled}
+            />
+            <div className="mt-2 p-3 bg-info/10 rounded-lg flex items-start gap-2">
+              <Info className="w-4 h-4 text-info flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-text-secondary">
+                {t('settings.messagePlaceholders')}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={savingSms || !twilioStatus?.configured}
+            className="w-full btn-primary flex items-center justify-center gap-2"
+          >
+            <Save className="w-4 h-4" />
+            {savingSms ? t('common.loading') : t('common.save')}
+          </button>
+        </form>
       </div>
     </div>
   )

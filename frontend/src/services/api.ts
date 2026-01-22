@@ -561,6 +561,9 @@ export const settingsAPI = {
     language?: string;
     brand_name?: string;
     currency?: string;
+    sms_reminders_enabled?: boolean;
+    sms_reminder_hours?: number;
+    sms_reminder_message?: string | null;
   }) => {
     const response = await api.put("/settings", data);
     return response.data;
@@ -575,6 +578,10 @@ export const settingsAPI = {
   },
   deleteLogo: async () => {
     const response = await api.delete("/settings/logo");
+    return response.data;
+  },
+  getTwilioStatus: async () => {
+    const response = await api.get("/settings/twilio-status");
     return response.data;
   },
 };

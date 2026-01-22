@@ -8,12 +8,20 @@ class SettingsBase(BaseModel):
     brand_name: Optional[str] = "Wardrop"
     logo_path: Optional[str] = None
     currency: Optional[str] = "DZD"
+    # SMS Reminder Settings
+    sms_reminders_enabled: Optional[bool] = False
+    sms_reminder_hours: Optional[int] = 24
+    sms_reminder_message: Optional[str] = None
 
 
 class SettingsUpdate(BaseModel):
     language: Optional[str] = None
     brand_name: Optional[str] = None
     currency: Optional[str] = None
+    # SMS Reminder Settings
+    sms_reminders_enabled: Optional[bool] = None
+    sms_reminder_hours: Optional[int] = None
+    sms_reminder_message: Optional[str] = None
 
 
 class SettingsResponse(SettingsBase):

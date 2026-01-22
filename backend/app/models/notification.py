@@ -9,7 +9,8 @@ class NotificationLog(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
-    type = Column(String(100), nullable=False)  # booking_confirmation, return_reminder, thank_you
+    booking_id = Column(Integer, ForeignKey("bookings.id", ondelete="SET NULL"), nullable=True)
+    type = Column(String(100), nullable=False)  # booking_confirmation, return_reminder, thank_you, booking_reminder
     channel = Column(String(50), nullable=False)  # sms, whatsapp
     message = Column(Text, nullable=False)
     status = Column(String(50), default="pending")  # pending, sent, failed

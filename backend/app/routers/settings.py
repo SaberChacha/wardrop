@@ -125,3 +125,19 @@ async def delete_logo(
     
     return settings
 
+
+@router.get("/twilio-status")
+async def get_twilio_status(
+    current_user = Depends(get_admin_user)
+):
+    """Check if Twilio is configured (admin only)"""
+    is_configured = bool(
+        config.twilio_account_sid and 
+        config.twilio_auth_token and 
+        config.twilio_phone_number
+    )
+    return {
+        "configured": is_configured,
+        "phone_number": config.twilio_phone_number if is_configured else None
+    }
+
