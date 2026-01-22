@@ -9,6 +9,10 @@ interface Settings {
   brand_name: string
   logo_path: string | null
   currency: string
+  // SMS Reminder Settings
+  sms_reminders_enabled: boolean
+  sms_reminder_hours: number
+  sms_reminder_message: string | null
 }
 
 interface SettingsContextType {
