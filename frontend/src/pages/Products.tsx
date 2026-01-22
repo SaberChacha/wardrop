@@ -9,6 +9,7 @@ import {
   Square,
   XCircle,
   Package,
+  Loader2,
 } from "lucide-react";
 import { productsAPI } from "../services/api";
 import { formatCurrency, getStatusColor, cn } from "../lib/utils";
@@ -34,6 +35,7 @@ export default function Products() {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [deletingProduct, setDeletingProduct] = useState<any>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [loadingProductId, setLoadingProductId] = useState<number | null>(null);
   const [newProductType, setNewProductType] = useState<"rent" | "sale">("rent");
 
   // Bulk selection state
@@ -137,6 +139,19 @@ export default function Products() {
     setSelectedItems(new Set());
   };
 
+  // Fetch full product details (including images) before opening edit modal
+  const openProductDetails = useCallback(async (productId: number) => {
+    setLoadingProductId(productId);
+    try {
+      const fullProduct = await productsAPI.getById(productId);
+      setSelectedProduct(fullProduct);
+    } catch (error) {
+      console.error("Failed to fetch product details:", error);
+    } finally {
+      setLoadingProductId(null);
+    }
+  }, []);
+
   // Mobile double-tap support
   const lastTapRef = useRef<{ id: number; time: number }>({ id: 0, time: 0 });
 
@@ -144,12 +159,12 @@ export default function Products() {
     const now = Date.now();
     if (lastTapRef.current.id === product.id && now - lastTapRef.current.time < 300) {
       e.preventDefault();
-      setSelectedProduct(product);
+      openProductDetails(product.id);
       lastTapRef.current = { id: 0, time: 0 };
     } else {
       lastTapRef.current = { id: product.id, time: now };
     }
-  }, []);
+  }, [openProductDetails]);
 
   return (
     <div className="space-y-6">
@@ -310,7 +325,7 @@ export default function Products() {
             {data?.products?.map((product: any) => (
               <div
                 key={product.id}
-                onDoubleClick={() => setSelectedProduct(product)}
+                onDoubleClick={() => openProductDetails(product.id)}
                 onTouchEnd={(e) => handleProductTap(product, e)}
                 className={cn(
                   "bg-surface rounded-xl border overflow-hidden card-hover group relative cursor-pointer",
@@ -319,6 +334,13 @@ export default function Products() {
                     : "border-border"
                 )}
               >
+                {/* Loading overlay when fetching product details */}
+                {loadingProductId === product.id && (
+                  <div className="absolute inset-0 z-50 bg-white/80 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  </div>
+                )}
+
                 {/* Selection Checkbox */}
                 <button
                   onClick={(e) => toggleSelection(product.id, e)}
